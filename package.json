@@ -6,7 +6,7 @@
     "start": "ng serve --live-reload --port 4200",
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
-    "deploy": "ng build --aot --output-hashing=none --source-map=false --optimization=true --configuration production && gh-pages -d ./docs --repo https://github.com/f80dev/WebSiteNFluent.git -f -t true -b gh-pages -m \"update from gh-pages\"",
+    "deploy": "ng build --aot --output-hashing=none --source-map=false --optimization=true --configuration production && gh-pages -d ./docs --repo https://github.com/f80dev/NFTLive.git -f -t true -b gh-pages -m \"update from gh-pages\"",
     "test": "ng test"
   },
   "private": true,

@@ -19,7 +19,7 @@ import {WebcamModule} from "ngx-webcam";
 import {ClipboardModule} from "@angular/cdk/clipboard";
 import {GoogleLoginProvider, SocialAuthServiceConfig, SocialLoginModule} from "@abacritt/angularx-social-login";
 import {MatCardModule} from "@angular/material/card";
-import {MatFormFieldModule} from "@angular/material/form-field";
+import {MatFormFieldControl, MatFormFieldModule} from "@angular/material/form-field";
 import {MatIconModule} from "@angular/material/icon";
 import {MatSelectModule} from "@angular/material/select";
 import {MatSliderModule} from "@angular/material/slider";
@@ -39,6 +39,10 @@ import {MatCheckboxModule} from "@angular/material/checkbox";
 import {AskForPaymentComponent} from "./ask-for-payment/ask-for-payment.component";
 import {HttpClientModule} from "@angular/common/http";
 import {MatSnackBarModule} from "@angular/material/snack-bar";
+import {BrowserAnimationsModule} from "@angular/platform-browser/animations";
+import {MatInputModule} from "@angular/material/input";
+import {MatStepperModule} from "@angular/material/stepper";
+import {FileDragNDropDirective} from './file-drag-ndrop.directive';
 
 
 const routes: Routes = [
@@ -60,6 +64,7 @@ const config: SocketIoConfig = { url: environment.server, options: {} };
     AdminComponent,
     PromptComponent,
     PaymentComponent,
+      FileDragNDropDirective,
     SignatureComponent,
     HourglassComponent,
     UploadFileComponent,
@@ -75,6 +80,10 @@ const config: SocketIoConfig = { url: environment.server, options: {} };
         ClipboardModule,
         SocialLoginModule,
         MatCardModule,
+        MatFormFieldModule,
+        BrowserModule,
+        BrowserAnimationsModule,
+        MatInputModule,
         MatFormFieldModule,
         MatIconModule,
         MatSelectModule,
@@ -92,6 +101,7 @@ const config: SocketIoConfig = { url: environment.server, options: {} };
         RouterOutlet,
         SocketIoModule.forRoot(config),
         RouterModule.forRoot(routes),
+        MatStepperModule,
     ],
   providers: [
       DeviceService,StyleManagerService,

@@ -22,6 +22,7 @@ import {_ask_for_paiement} from "../ask-for-payment/ask-for-payment.component";
 import {UserService} from "../user.service";
 import {MatDialog} from "@angular/material/dialog";
 import {extract_merchant_from_param, Merchant} from "../payment/payment.component";
+import {DeviceService} from "../device.service";
 
 @Component({
   selector: 'app-nftlive',
@@ -33,7 +34,7 @@ export class NftliveComponent implements OnInit {
     visuels:any[]=[];
     message="";
     sel_visuel: any;
-    dests="paul.dudule@gmail.com";
+    dests="";
     name="Ma Photo";
     infos="";
     miner: CryptoKey=newCryptoKey();
@@ -51,18 +52,26 @@ export class NftliveComponent implements OnInit {
     background_image="";
     joinDoc: string=""
     photographer="";
+    show_last_step: boolean=false;
+    price: number=0;
+    fiat_price:number=0;
+    config: string="";
+    border="2%";
 
     public constructor(
         public network:NetworkService,
         public routes:ActivatedRoute,
         public toast:MatSnackBar,
         public user:UserService,
+        public device:DeviceService,
         public style:StyleManagerService,
         public dialog:MatDialog
     ) {
+
     }
 
     ngOnInit(): void {
+        if(!this.device.large)this.border="0px";
         setTimeout(()=>{this.read_param()},200);
         this.style.setStyle("theme","nfluent-dark-theme.css")
     }
@@ -75,22 +84,20 @@ export class NftliveComponent implements OnInit {
 
     onFileSelected($event: any) {
         this.photo=$event;
+        this.preview()
     }
 
-    preview(limit=10,config=environment.appli + "/assets/config_nftlive.yaml") {
-        let message="Préparation des propositions de NFTs";
-        if(this.photo.file.length>100000)message=message+" (le délai de préparation peut excéder 1 minute)"
-        wait_message(this,message);
+    preview(limit=10) {
+
         let seed=Math.round(Math.random()*100);
 
         $$("On récupére une première image et la taille de la sequences")
         this.network.send_photo_for_nftlive(
-            limit,config, this.nft_size.toString(),
+            limit,this.config, this.nft_size.toString(),
             80,"",[{name:"title", value:this.name}],
             {photo:this.photo}, "base64").subscribe((result:any)=>{
             this.visuels=init_visuels(result.images);
             if(this.visuels.length>0) this.sel_visuel=this.visuels[0];
-            wait_message(this);
 
             // let seq:number[]=[]
             // for(let i=1;i<result.sequences.length;i=i+1)seq.push(i);
@@ -105,8 +112,6 @@ export class NftliveComponent implements OnInit {
                 showError(this,err);
                 wait_message(this);
         })
-
-
     }
 
     restart() {
@@ -119,6 +124,7 @@ export class NftliveComponent implements OnInit {
     }
 
     async read_param() {
+        //Lecture des paramétres
         let params: any = await getParams(this.routes);
         $$("Lecture des parametres ", params)
         this.miner = newCryptoKey("", "", "")
@@ -132,6 +138,9 @@ export class NftliveComponent implements OnInit {
         this.collection = newCollection(params.collection || environment.nftlive.collection, this.miner);
         this.network.network = params.network || environment.nftlive.network;
         this.merchant=extract_merchant_from_param(params);
+        this.price=params.price || environment.nftlive.crypto_price
+        this.fiat_price=params.fiat_price || environment.nftlive.fiat_price
+        this.config=params.config || environment.appli+"/assets/config_nftlive.yaml";
     }
 
     return_error(){
@@ -142,7 +151,8 @@ export class NftliveComponent implements OnInit {
     async ask_for_mint(){
         let rep:any=await _ask_for_paiement(this,
             this.merchant!.wallet!.token,
-            environment.nftlive.crypto_price,environment.nftlive.fiat_price,
+            this.price,
+            this.fiat_price,
             this.merchant!,
             this.user.wallet_provider,
             "Frais de fabrication et d'enregistrement du NFT",
@@ -235,6 +245,7 @@ export class NftliveComponent implements OnInit {
     async rotate_photo() {
         if(this.photo.file){
             this.photo.file=await rotate(this.photo.file,90);
+            this.preview();
         }
     }
 

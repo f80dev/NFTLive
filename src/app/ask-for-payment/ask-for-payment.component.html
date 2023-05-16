@@ -7,18 +7,18 @@
         <table style="width: 100%;text-align: center;">
 <!--            Affichage des frais et devises-->
             <tr style="font-size:large">
-                <td style="width: 50%;">{{data.to_paid_in_fiat}} {{data.merchant.currency}}</td>
-                <td>{{data.to_paid}} {{data.merchant.wallet.unity}}</td>
+                <td style="width: 50%;" *ngIf="data.merchant.id">{{data.to_paid_in_fiat}} {{data.merchant.currency}}</td>
+                <td *ngIf="data.merchant.wallet.token">{{data.to_paid}} {{data.merchant.wallet.unity}}</td>
             </tr>
 <!--            Affichage des boutons de paiement-->
             <tr>
-                <td style="width: 50%;"><button mat-raised-button color="primary" (click)="buy_method='fiat'">Payer</button></td>
-                <td><button mat-raised-button color="primary" (click)="set_payment_in_crypto()">Payer</button></td>
+                <td style="width: 50%;" *ngIf="data.merchant.id"><button mat-raised-button color="primary" (click)="buy_method='fiat'">Payer</button></td>
+                <td *ngIf="data.merchant.wallet.token"><button mat-raised-button color="primary" (click)="set_payment_in_crypto()">Payer</button></td>
             </tr>
             <tr></tr>
             <tr>
-                <td>Paiement depuis une carte de crédit</td>
-                <td>Paiement avec la crypto de Nfluent</td>
+                <td *ngIf="data.merchant.id">Paiement depuis une carte de crédit</td>
+                <td *ngIf="data.merchant.wallet.token">Paiement avec la crypto de Nfluent</td>
             </tr>
         </table>
     </div>

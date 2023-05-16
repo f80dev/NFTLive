@@ -12,6 +12,7 @@ xcopy /f /y ..\NFTCalvi\src\app\splash\*.* src\app\splash\
 xcopy /f /y ..\NFTCalvi\src\app\network.service.ts src\app\
 xcopy /f /y ..\NFTCalvi\src\app\safe.pipe.ts src\app\
 xcopy /f /y ..\NFTCalvi\src\app\device.service.ts src\app\
+xcopy /f /y ..\NFTCalvi\src\app\file-drag-ndrop.directive.ts src\app\
 xcopy /f /y ..\NFTCalvi\src\app\user.service.ts src\app\
 xcopy /f /y ..\NFTCalvi\src\app\style-manager.service.ts src\app\
 xcopy /f /y ..\NFTCalvi\src\nfluent.scss src\

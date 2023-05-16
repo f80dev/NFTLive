@@ -15,5 +15,6 @@ call ng g s network
 call ng g s device
 call ng g s alias
 call ng g p safe
+call ng g d file-drag-ndrop
 
 ./update_code

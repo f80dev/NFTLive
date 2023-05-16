@@ -13,3 +13,11 @@ mat-expansion-panel-header {
     padding-bottom: 5px;
     margin: 0;
 }
+
+mat-vertical-stepper {
+    margin-left: -10px;
+}
+
+mat-step {
+    width: 100%;
+}

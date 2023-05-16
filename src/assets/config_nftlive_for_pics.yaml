@@ -1,0 +1,86 @@
+quality: 98
+version: 1
+message: ""
+id: 186ef1382f6
+height: 400
+width: 400
+data:
+  description: ""
+  files: ""
+  operation: ""
+  properties: ""
+  symbol: token__idx__
+  title: MonNFT
+  tags: ""
+  sequence:
+    - Texte ici
+  creators: ""
+attributes: {}
+layers:
+  - params: {}
+    name: canevas
+    elements:
+      - image: "https://raw.githubusercontent.com/nfluentdev/storage_pics/main/canevas%20for%20graou%20edition.svg"
+        type: image/svg
+        name: caneva1
+
+      - image: "https://raw.githubusercontent.com/nfluentdev/storage_pics/main/canevas%20for%20graou%20edition2.svg"
+        type: image/svg
+        name: caneva2
+
+      - image: "https://raw.githubusercontent.com/nfluentdev/storage_pics/main/canevas%20for%20graou%20edition3.svg"
+        type: image/svg
+        name: caneva3
+
+    text: ""
+    unique: false
+    width: 400
+    height: 400
+    indexed: true
+    position: 1
+    translation: 0,0
+    scale: 1,1
+    margin: 0,0
+  - params: {}
+    name: logo_dino
+    elements:
+      - image: "https://github.com/nfluentdev/storage_pics/raw/421c7242767c77ea6463d92799e4d0b7f6e18934/dino_cartouche2.png"
+        type: image/png
+        name: dino2
+
+      - image: "https://github.com/nfluentdev/storage_pics/raw/421c7242767c77ea6463d92799e4d0b7f6e18934/dino_cartouche.png"
+        type: image/png
+        name: dino1
+
+
+
+    text: ""
+    unique: false
+    width: 400
+    height: 400
+    indexed: true
+    position: 1
+    translation: 0,0
+    scale: 1,1
+    margin: 0,0
+
+
+limit: 1
+help: ""
+max_items: 11
+label: localConfig
+platform:
+  label: ""
+  value: ""
+seed: 0
+text:
+  color: "#FFFFFF"
+  fontsize: 12
+  position_text:
+    x: 10
+    y: 10
+  text_to_add: Texte ici
+  font:
+    name: Corbel
+    file: corbel.ttf
+location: localConfig.yaml

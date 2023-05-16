@@ -9,9 +9,11 @@ call ng g c hourglass
 call ng g c upload-file
 call ng g c splash
 call ng g c scanner
+call ng g c ask-for-payment
 call ng g s alias
 call ng g s network
 call ng g s device
 call ng g s alias
+call ng g p safe
 
 ./update_code

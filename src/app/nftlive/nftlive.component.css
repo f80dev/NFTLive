@@ -1,0 +1,15 @@
+app-input {
+    display: inline-block;
+}
+
+button {
+    margin: 10px;
+    min-width: 100px;
+}
+
+mat-expansion-panel-header {
+    color: white;
+    height: 40px;
+    padding-bottom: 5px;
+    margin: 0;
+}

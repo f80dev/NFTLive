@@ -27,10 +27,22 @@
             "tsConfig": "tsconfig.app.json",
             "assets": [
               "src/favicon.ico",
-              "src/assets"
+              "src/assets",
+              "src/CNAME",
+              "src/404.html"
             ],
             "styles": [
-              "src/styles.css"
+              "src/styles.css",
+              {
+                "input": "src/nfluent.scss",
+                "inject": false,
+                "bundleName": "nfluent-theme"
+              },
+              {
+                "input": "src/nfluent-dark.scss",
+                "inject": false,
+                "bundleName": "nfluent-dark-theme"
+              }
             ],
             "scripts": []
           },
@@ -39,13 +51,13 @@
               "budgets": [
                 {
                   "type": "initial",
-                  "maximumWarning": "500kb",
-                  "maximumError": "1mb"
+                  "maximumWarning": "50mb",
+                  "maximumError": "100mb"
                 },
                 {
                   "type": "anyComponentStyle",
-                  "maximumWarning": "2kb",
-                  "maximumError": "4kb"
+                  "maximumWarning": "500kb",
+                  "maximumError": "1000kb"
                 }
               ],
               "fileReplacements": [

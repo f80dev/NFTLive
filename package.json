@@ -22,6 +22,8 @@
     "@angular/platform-browser-dynamic": "~15.2.4",
     "@angular/router": "~15.2.4",
     "animejs": "^3.2.1",
+    "jsqr": "1.4.0",
+    "ng-gallery": "^8.0.3",
     "@multiversx/sdk-core": "^12.1.1",
     "@multiversx/sdk-extension-provider": "^2.0.7",
     "@multiversx/sdk-network-providers": "^1.4.0",

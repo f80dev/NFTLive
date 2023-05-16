@@ -3,6 +3,7 @@ import {ActivatedRoute} from "@angular/router";
 import {NFT} from "./nft";
 import {Clipboard} from "@angular/cdk/clipboard";
 import {NFLUENT_WALLET} from "./definitions";
+import {ImageItem} from "ng-gallery";
 
 export interface CryptoKey {
   name: string | null
@@ -185,6 +186,12 @@ export function exportToCsv(filename: string, rows: object[]) {
       }).join('\n');
 
       download_file(csvContent,filename)
+}
+
+export function init_visuels(images:any[]){
+  return(images.map((x:any)=>{
+    return new ImageItem({src:x,thumb:x});
+  }));
 }
 
 //tag #save_file save local

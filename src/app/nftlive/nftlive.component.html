@@ -1,0 +1,136 @@
+<div class="mainform"
+     style="text-align:left;position:fixed;width:100vw;height:100vh;background-repeat: no-repeat;background-size: cover;"
+     [style.background-image]="'url('+background_image+')'">
+
+	<div class="background-component"
+	     style="position:relative;width:90%;left:3%;top:3%;min-height: 90vh;max-width: 500px;display: inline-block;text-align: center;color: white;padding: 10px;">
+
+		<div class="titleform">{{appname}}</div>
+		<div class="subtitleform">{{claim}}</div>
+
+		<app-hourglass [message]="message"></app-hourglass>
+
+		<br>
+		<app-input value_type="text" maxlength="40"
+		           *ngIf="photo && message.length==0 && visuels.length==0" width="300px"
+		           label="Titre du NFT" [value]="name"
+		           (valueChange)="name=$event">
+		</app-input>
+		<br>
+
+
+		<app-upload-file (uploaded)="onFileSelected($event)"
+		                 *ngIf="message=='' && !photo" width="250px" height="150px"
+		                 [zone]="true" style="display: inline-block;margin-top: 20px;padding: 20px;"
+		                 title="Importer un document depuis votre ordinateur / smartphone"
+		                 [maxsize]="10000000">
+			Importer une photo
+		</app-upload-file>
+
+		<div *ngIf="photo && visuels.length==0">
+			<div style="display: inline-block;width:250px;height: 250px;position: relative;padding: 15px;margin: 20px;" class="mat-elevation-z2"  >
+				<img [src]="photo.file"
+				     (click)="photo=''"
+				     style="width:100%;height:100%;object-fit: cover;">
+				<mat-icon (click)="rotate_photo()" title="Tourner la photo" *ngIf="!is_animated_photo()"
+				          style="display:block;cursor:pointer;position:absolute;z-index: 100;left:20px;top:20px;color: gray;">
+					cameraswitch
+				</mat-icon>
+			</div>
+		</div>
+
+
+		<div style="max-width: 350px;display: inline-block;margin-top: 20px;" *ngIf="photo && message=='' && visuels.length==0 &&  url_wallet.length==0">
+			<app-input value_type="memo" [value]="infos" (valueChange)="infos=$event;"
+			           [cols]="40" [rows]="2" width="300px"
+			           label="Texte d'accompagnement"
+			           help="Informations ajoutée dans le NFTs">
+			</app-input>
+			<br><br>
+
+
+			<mat-expansion-panel>
+				<mat-expansion-panel-header>Mode avancé</mat-expansion-panel-header>
+				<app-input label="Dimension du visuel" [min]="400" [max]="2000" width="250px" [step]="10"
+				           color_value="white"
+				           [value]="nft_size" (valueChange)="nft_size=$event" value_type="slider">
+				</app-input>
+				<br>
+				<app-input label="Pseudo / Nom du photographe" maxlength="50"
+				           [value]="photographer" (valueChange)="photographer=$event">
+				</app-input>
+			</mat-expansion-panel>
+
+			<br><br>
+
+			<button mat-raised-button color="primary"
+			        (click)="preview()">
+				Voir les NFTs
+			</button>
+
+			<button mat-raised-button
+			        (click)="restart()">
+				Annuler
+			</button>
+
+
+		</div>
+
+		<div *ngIf="visuels.length>0 && message=='' && url_wallet.length==0">
+
+			<p class="mat-body-1">Sélectionner la photo à utiliser pour le NFT</p>
+			<gallery
+					style="width: 350px;height:440px;display: inline-block;"
+					(indexChange)="select_visuel($event)" [thumbHeight]="90"
+					[items]="visuels"></gallery>
+
+			<br>
+			<mat-checkbox [(ngModel)]="joinDoc" title="Ainsi le document peut être ouvert depuis le certificat">
+				Joindre la photo originale
+			</mat-checkbox>
+
+			<br>
+			<br>
+			<app-input label="Nombre d'exemplaires (tirage)"
+			           [min]="1" [max]="500" [value]="max_supply" width="300px"
+			           value_type="slider" *ngIf="isSemiFungible()"
+			           (valueChange)="max_supply=$event">
+			</app-input>
+
+			<br><br>
+			<app-input label="destinataire du NFT" width="300px"
+			           help="Adresse email ou d'un wallet"
+			           [value]="dests" (valueChange)="dests=$event" value_type="text"></app-input>
+
+			<br><br>
+
+			<button mat-raised-button color="primary"
+			        [disabled]="message.length>0"
+			        (click)="ask_for_mint()">
+				Fabriquer
+			</button>
+
+			<button mat-raised-button (click)="clear_preview()">
+				Modifier
+			</button>
+
+			<button mat-raised-button (click)="restart()">
+				Effacer
+			</button>
+
+
+		</div>
+
+		<div *ngIf="url_gallery.length>0 && url_wallet.length>0" class="mat-body-2">
+			<a [href]="url_wallet" target="walletNFluent" style="margin: 10px;">Wallet NFLUENT</a>
+			<a [href]="url_gallery" target="Gallery" style="margin: 10px;">Voir le NFT</a><br><br>
+
+			<button mat-raised-button color="primary" (click)="restart()">
+				Nouvelle Photo
+			</button>
+		</div>
+	</div>
+
+
+
+</div>

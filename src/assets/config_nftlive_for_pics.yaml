@@ -34,8 +34,8 @@ layers:
 
     text: ""
     unique: false
-    width: 400
-    height: 400
+    width: 800
+    height: 800
     indexed: true
     position: 1
     translation: 0,0
@@ -44,20 +44,18 @@ layers:
   - params: {}
     name: logo_dino
     elements:
-      - image: "https://github.com/nfluentdev/storage_pics/raw/421c7242767c77ea6463d92799e4d0b7f6e18934/dino_cartouche2.png"
-        type: image/png
-        name: dino2
-
-      - image: "https://github.com/nfluentdev/storage_pics/raw/421c7242767c77ea6463d92799e4d0b7f6e18934/dino_cartouche.png"
+      - image: "https://raw.github.com/nfluentdev/storage_pics/421c7242767c77ea6463d92799e4d0b7f6e18934/dino_cartouche.png"
         type: image/png
         name: dino1
 
-
+      - image: "https://raw.githubusercontent.com/nfluentdev/storage_pics/fa28271e1c13c981d16b297ae9ae239b4a65bdb0/LogoPICS.png"
+        type: image/png
+        name: dino2
 
     text: ""
     unique: false
-    width: 400
-    height: 400
+    width: 800
+    height: 800
     indexed: true
     position: 1
     translation: 0,0

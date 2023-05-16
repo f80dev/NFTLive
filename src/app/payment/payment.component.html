@@ -4,21 +4,19 @@
     <div *ngIf="money" style="margin: 15px;">
         <div style="margin: 15px;" class="mat-subheading-1">
             Coût de l'opération: {{price}} {{money!.unity}} + Frais de service
-
         </div>
-        <div *ngIf="balance>=0" style="font-size: small">Vous avez {{balance/1e18 | number:"1.0-1"}} {{money!.unity}}</div>
+        <div *ngIf="balance>0" style="font-size: small">Vous avez {{balance/1e18 | number:"1.0-1"}} {{money!.unity}}</div>
     </div>
 
-    <div *ngIf="balance<price && merchant && merchant.wallet && merchant.wallet.bank && merchant.wallet.bank.length>0" style="margin-top: 20px;">
+    <div *ngIf="balance<price && merchant && merchant.wallet && bank" style="margin-top: 20px;">
         <div class="color-accent">Votre solde est insuffisant</div>
 
-        <button mat-raised-button
+        <button mat-raised-button color="primary"
                 style="margin: 20px;"
                 (click)="open_bank()">
             Acquérir des {{money!.unity}}
         </button>
     </div>
-
 
     <button type="button" mat-raised-button color="primary"
             *ngIf="qrcode_buy_token.length==0"

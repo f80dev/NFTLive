@@ -18,7 +18,7 @@
             <tr></tr>
             <tr>
                 <td *ngIf="data.merchant.id">Paiement depuis une carte de crédit</td>
-                <td *ngIf="data.merchant.wallet.token">Paiement avec la crypto de Nfluent</td>
+                <td *ngIf="data.merchant.wallet.token">Paiement en crypto</td>
             </tr>
         </table>
     </div>
@@ -43,6 +43,7 @@
                      [user]="data.addr"
                      [buy_method]="buy_method"
                      [billing_to]="data.billing_to"
+                     [bank]="data.bank"
                      [wallet_provider]="data.provider"
                      [price]="data.to_paid"
                      [title]="data.intro_payment"

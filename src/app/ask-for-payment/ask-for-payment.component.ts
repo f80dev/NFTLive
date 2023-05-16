@@ -1,7 +1,7 @@
 import {Component, Inject, OnInit} from '@angular/core';
 import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
 import {Merchant} from "../payment/payment.component";
-import {showMessage} from "../../tools";
+import {Bank, showMessage} from "../../tools";
 import {UserService} from "../user.service";
 import {NetworkService} from "../network.service";
 
@@ -14,7 +14,8 @@ export function _ask_for_paiement(vm:any,token_id:string,to_paid:number,to_paid_
                                   intro_payment="Coût de l'opération",
                                   billing_address="",
                                   bill_content:{description:string,subject:string,contact:string},
-                                  buy_method="")  {
+                                  buy_method="",
+                                  bank:Bank)  {
     return new Promise((resolve, reject) => {
         if(to_paid==0 || to_paid_in_fiat==0){
             resolve({})
@@ -26,6 +27,7 @@ export function _ask_for_paiement(vm:any,token_id:string,to_paid:number,to_paid_
                         to_paid:to_paid,
                         to_paid_in_fiat:to_paid_in_fiat,
                         title: title,
+                        bank:bank,
                         billing_to:billing_address,
                         buy_method:buy_method,
                         subtitle:subtitle,
@@ -54,6 +56,7 @@ export function _ask_for_paiement(vm:any,token_id:string,to_paid:number,to_paid_
 export class AskForPaymentComponent implements OnInit {
 
     buy_method: "fiat" | "crypto" | "" = "";
+    nb_payment=0;
 
     constructor(public dialogRef: MatDialogRef<AskForPaymentComponent>,
                 public user:UserService,
@@ -62,6 +65,9 @@ export class AskForPaymentComponent implements OnInit {
 
     ngOnInit(): void {
         this.buy_method=this.data.buy_method;
+        if(this.data.merchant!.wallet!.token)this.nb_payment=this.nb_payment+1;
+        if(this.data.merchant!.id)this.nb_payment=this.nb_payment+1;
+
         if(this.data.merchant.currency=="")this.buy_method="crypto";
         if(!this.data.merchant.wallet)this.buy_method="fiat";
     }

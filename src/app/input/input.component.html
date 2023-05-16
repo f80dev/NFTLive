@@ -71,6 +71,7 @@
       <td style="text-align: left;width:80%;"><span class="mat-caption">{{label}}</span></td>
       <td style="text-align: right;overflow: hidden;" class="mat-headline-6" [style.color]="color_value">
         <input [(ngModel)]="value" type="number" [max]="max" [min]="min"
+               class="mat-caption color-primary"
                (ngModelChange)="direct_change_slider()"
                (focusout)="direct_change_slider()"
                style="max-width:60px;border: none;background:none;font-size: large;text-align: right;">

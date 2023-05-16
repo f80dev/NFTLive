@@ -509,3 +509,27 @@ export function isEmail(addr="") {
   return expression.test(addr);
 }
 
+
+
+export interface Bank {
+  miner:string
+  refund: number
+  title: string
+  network: string
+  token: string
+}
+
+
+export function extract_bank_from_param(params:any) : Bank | undefined {
+  if(params && params["bank.miner"] && params["bank.token"]){
+    return {
+      miner: params["bank.miner"],
+      network: params["bank.network"],
+      refund: params["bank.refund"],
+      title: params["bank.title"],
+      token: params["bank.token"]
+    }
+  }
+
+  return undefined;
+}

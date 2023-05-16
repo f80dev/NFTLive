@@ -5,14 +5,14 @@ import {wait_message} from "../hourglass/hourglass.component";
 import {GalleryState, ImageItem} from "ng-gallery";
 import {NFT} from "../../nft";
 import {
-    $$,
+    $$, Bank,
     getParams,
     newCryptoKey,
     CryptoKey,
     showMessage,
     get_nfluent_wallet_url,
     showError,
-    isEmail, rotate, now, init_visuels
+    isEmail, rotate, now, init_visuels, extract_bank_from_param
 } from "../../tools";
 import {Collection, newCollection} from "../../operation";
 import {ActivatedRoute} from "@angular/router";
@@ -34,7 +34,7 @@ export class NftliveComponent implements OnInit {
     visuels:any[]=[];
     message="";
     sel_visuel: any;
-    dests="";
+    dests="paul.dudule@gmail.com";
     name="Ma Photo";
     infos="";
     miner: CryptoKey=newCryptoKey();
@@ -52,11 +52,15 @@ export class NftliveComponent implements OnInit {
     background_image="";
     joinDoc: string=""
     photographer="";
+    promo="";
+    promofile="";
     show_last_step: boolean=false;
     price: number=0;
     fiat_price:number=0;
     config: string="";
     border="2%";
+    size="90%";
+    bank:Bank=environment.bank;
 
     public constructor(
         public network:NetworkService,
@@ -71,7 +75,10 @@ export class NftliveComponent implements OnInit {
     }
 
     ngOnInit(): void {
-        if(!this.device.large)this.border="0px";
+        this.device.isHandset$.subscribe((isHandset)=>{
+            if(isHandset){this.border="0px";this.size="100%";}
+        })
+
         setTimeout(()=>{this.read_param()},200);
         this.style.setStyle("theme","nfluent-dark-theme.css")
     }
@@ -87,8 +94,8 @@ export class NftliveComponent implements OnInit {
         this.preview()
     }
 
-    preview(limit=10) {
 
+    preview(limit=10) {
         let seed=Math.round(Math.random()*100);
 
         $$("On récupére une première image et la taille de la sequences")
@@ -128,6 +135,12 @@ export class NftliveComponent implements OnInit {
         let params: any = await getParams(this.routes);
         $$("Lecture des parametres ", params)
         this.miner = newCryptoKey("", "", "")
+        if(params.bank){
+            this.bank=params.bank;
+        } else {
+            this.bank=extract_bank_from_param(params) || environment.bank;
+        }
+
         this.background_image=params.visual || "";
         this.miner = newCryptoKey("","","",params.miner || environment.nftlive.miner_key);
         this.stockage = params.stockage || environment.stockage.stockage;
@@ -138,6 +151,8 @@ export class NftliveComponent implements OnInit {
         this.collection = newCollection(params.collection || environment.nftlive.collection, this.miner);
         this.network.network = params.network || environment.nftlive.network;
         this.merchant=extract_merchant_from_param(params);
+        this.promo=params.promotion || "";
+        this.promofile=params.promolink || "";
         this.price=params.price || environment.nftlive.crypto_price
         this.fiat_price=params.fiat_price || environment.nftlive.fiat_price
         this.config=params.config || environment.appli+"/assets/config_nftlive.yaml";
@@ -158,7 +173,7 @@ export class NftliveComponent implements OnInit {
             "Frais de fabrication et d'enregistrement du NFT",
             "Choisissez un mode de paiement",
             "",
-            "",{contact: "", description: "", subject: ""})
+            "",{contact: "", description: "", subject: ""},"",this.bank)
 
         if(rep){
             this.user.init_wallet_provider(rep.data.provider,rep.address)
@@ -178,7 +193,7 @@ export class NftliveComponent implements OnInit {
                     environment.appli+"/assets/wallet_access.html",
                     environment.appli+"/assets/existing_account_wallet_access.html"
                 ).subscribe(async (account:any)=> {
-                    wait_message(this,"Minage du NFT");
+                    wait_message(this,"Fabrication du NFT");
                     let owner=account.address
 
                     this.network.upload(this.photo.file,this.stockage_document,this.api_key_document).subscribe(async (file:any)=>{
@@ -186,8 +201,11 @@ export class NftliveComponent implements OnInit {
                         if(this.photographer.length==0)this.photographer=owner;
                         let attributes=[
                             {trait_type:"Prise de vue",value:now("datetime")},
-                            {trait_type:"Photographe",value:this.photographer},
+                            {trait_type:"Photographe",value:this.photographer}
                         ]
+                        if(this.promo.length>0)attributes.push({trait_type:"Evénement",value:this.promo});
+                        if(this.promofile.length>0)files.push(this.promofile);
+
                         this.network.upload(this.sel_visuel.data.src,this.stockage).subscribe(async (addr_visual:any)=>{
 
                             let nft:NFT={

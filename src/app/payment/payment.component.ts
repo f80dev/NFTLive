@@ -21,6 +21,7 @@ import {_prompt} from "../prompt/prompt.component";
 import {MatSnackBar} from "@angular/material/snack-bar";
 import {MatDialog} from "@angular/material/dialog";
 import {ReadyToPayChangeResponse} from "@google-pay/button-angular";
+import {wait_message} from "../hourglass/hourglass.component";
 
 export interface PaymentTransaction {
   transaction:string ,
@@ -190,6 +191,8 @@ export class PaymentComponent implements AfterContentInit,OnDestroy {
   //     transactionState: 'SUCCESS',
   //   };
   // };
+  message="";
+  modal=true;
 
 
 
@@ -233,6 +236,7 @@ export class PaymentComponent implements AfterContentInit,OnDestroy {
           }
           t=new Transaction(opt);
         }else{
+          wait_message(this,"Initialisation du paiement",true)
           const factory = new TransferTransactionsFactory(new GasEstimator());
           //voir https://docs.multiversx.com/sdk-and-tools/sdk-js/sdk-js-cookbook#token-transfers
           t=factory.createESDTTransfer({
@@ -248,8 +252,11 @@ export class PaymentComponent implements AfterContentInit,OnDestroy {
         }
 
         try {
+          wait_message(this,"En attente de validation sur votre wallet",true)
           let sign_transaction=await this.wallet_provider.signTransaction(t);
+          wait_message(this,"Envoi de la transaction")
           let hash=await proxyNetworkProvider.sendTransaction(sign_transaction);
+          wait_message(this);
           resolve({
             transaction:hash,
             price:this.price,
@@ -259,6 +266,7 @@ export class PaymentComponent implements AfterContentInit,OnDestroy {
             unity:unity,
             provider:this.wallet_provider});
         } catch(error) {
+          wait_message(this);
           $$("Error",error)
           reject(error)
         }

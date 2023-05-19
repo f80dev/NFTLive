@@ -49,6 +49,9 @@ export class InputComponent implements OnChanges,OnInit {
 
   on_clear() {
     this.value=null;
+    if(this.value_type=="text")this.value="";
+    this.valueChange.emit(this.value);
+    this.on_validate();
   }
 
   on_validate() {

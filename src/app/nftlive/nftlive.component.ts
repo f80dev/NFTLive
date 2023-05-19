@@ -1,4 +1,4 @@
-import {Component, OnInit} from '@angular/core';
+import {Component, OnDestroy, OnInit} from '@angular/core';
 import {NetworkService} from "../network.service";
 import {environment} from "../../environments/environment";
 import {wait_message} from "../hourglass/hourglass.component";
@@ -29,12 +29,12 @@ import {DeviceService} from "../device.service";
   templateUrl: './nftlive.component.html',
   styleUrls: ['./nftlive.component.css']
 })
-export class NftliveComponent implements OnInit {
+export class NftliveComponent implements OnInit,OnDestroy {
     photo: any;
     visuels:any[]=[];
     message="";
     sel_visuel: any;
-    dests="paul.dudule@gmail.com";
+    dests="";
     name="Ma Photo";
     infos="";
     miner: CryptoKey=newCryptoKey();
@@ -51,7 +51,7 @@ export class NftliveComponent implements OnInit {
     api_key_document: string="";
     background_image="";
     joinDoc: string=""
-    photographer="";
+    photographer="Anonyme";
     promo="";
     promofile="";
     show_last_step: boolean=false;
@@ -61,6 +61,8 @@ export class NftliveComponent implements OnInit {
     border="2%";
     size="90%";
     bank:Bank=environment.bank;
+    royalties: number=0;
+    show_login: boolean=false;
 
     public constructor(
         public network:NetworkService,
@@ -141,21 +143,27 @@ export class NftliveComponent implements OnInit {
             this.bank=extract_bank_from_param(params) || environment.bank;
         }
 
-        this.background_image=params.visual || "";
-        this.miner = newCryptoKey("","","",params.miner || environment.nftlive.miner_key);
-        this.stockage = params.stockage || environment.stockage.stockage;
-        this.stockage_document = params.stockage_document || environment.stockage.stockage_document;
-        this.api_key_document=params.api_key_document || "";
-        this.appname = params.appname || environment.appname;
-        this.claim = params.claim || environment.nftlive.claim;
-        this.collection = newCollection(params.collection || environment.nftlive.collection, this.miner);
-        this.network.network = params.network || environment.nftlive.network;
-        this.merchant=extract_merchant_from_param(params);
-        this.promo=params.promotion || "";
-        this.promofile=params.promolink || "";
+        this.background_image=params.visual || ""
+        if(params.style)this.style.setStyle("theme",params.style);
+        this.miner = newCryptoKey("","","",params.miner || environment.nftlive.miner_key)
+        this.stockage = params.stockage || environment.stockage.stockage
+        this.stockage_document = params.stockage_document || environment.stockage.stockage_document
+        this.api_key_document=params.api_key_document || ""
+        this.appname = params.appname || environment.appname
+        this.claim = params.claim || environment.nftlive.claim
+        this.collection = newCollection(params.collection || environment.nftlive.collection, this.miner)
+        this.network.network = params.network || environment.nftlive.network
+        this.merchant=extract_merchant_from_param(params) || environment.merchant;
+        this.promo=params.promotion || ""
+        this.promofile=params.promolink || ""
+
+        this.royalties=params.royalties || environment.nftlive.royalties || 0
+        this.royalties=Number(this.royalties.toString().replace("%",""))
+        if(this.royalties>0 && this.royalties<1)this.royalties=this.royalties*100;
+
         this.price=params.price || environment.nftlive.crypto_price
         this.fiat_price=params.fiat_price || environment.nftlive.fiat_price
-        this.config=params.config || environment.appli+"/assets/config_nftlive.yaml";
+        this.config=params.config || environment.appli+"/assets/config_nftlive.yaml"
     }
 
     return_error(){
@@ -171,19 +179,24 @@ export class NftliveComponent implements OnInit {
             this.merchant!,
             this.user.wallet_provider,
             "Frais de fabrication et d'enregistrement du NFT",
-            "Choisissez un mode de paiement",
+             "",
             "",
             "",{contact: "", description: "", subject: ""},"",this.bank)
 
         if(rep){
             this.user.init_wallet_provider(rep.data.provider,rep.address)
             this.user.buy_method=rep.buy_method;
+            if(this.dests=='')this.dests=rep.address;
             this.mint();
+        } else {
+            showMessage(this,"Annulation");
         }
     }
 
     async mint() {
-        if(this.sel_visuel){
+        if(!this.dests || this.dests.length==0) {
+            showMessage(this,"Vous devez indiquer votre adresse ou l'adresse d'un destinataire pour créer ce NFT");
+        } else {
             let idx=0;
             for(let address of this.dests.split(' ')){
                 wait_message(this,"Création d'un wallet pour "+address);
@@ -207,10 +220,9 @@ export class NftliveComponent implements OnInit {
                         if(this.promofile.length>0)files.push(this.promofile);
 
                         this.network.upload(this.sel_visuel.data.src,this.stockage).subscribe(async (addr_visual:any)=>{
-
                             let nft:NFT={
                                 balances: undefined,
-                                type: "SemiFungible",
+                                type: this.max_supply==1 ? "NonFungible" : "SemiFungible",
                                 address: undefined,
                                 attributes: attributes,
                                 collection: this.collection,
@@ -225,14 +237,14 @@ export class NftliveComponent implements OnInit {
                                 name: this.name,
                                 network: this.network.network,
                                 owner: owner,
-                                royalties: 0,
+                                royalties: this.royalties,
                                 solana: undefined,
                                 style: undefined,
                                 symbol: "NFTLive NFT #"+idx,
                                 tags: "NFTLive",
                                 visual: addr_visual.url
                             }
-                            $$("Minage du NFT attribué a "+account.address)
+                            $$("Minage du NFT attribué a "+account.address,nft)
                             idx=idx+1;
                             let minage:any=await this.network.mint(nft,this.miner,owner,"",false,this.stockage,this.network.network)
 
@@ -240,7 +252,7 @@ export class NftliveComponent implements OnInit {
                             if(minage.error==""){
                                 if(isEmail(address))showMessage(this,"Consulter votre mail "+address+" pour retrouver votre NFT")
                                 this.url_wallet=get_nfluent_wallet_url(owner,this.network.network,environment.wallet);
-                                this.url_gallery=minage.link_gallery;
+                                this.url_gallery=minage.link_nft_gallery;
                             } else {
                                 showMessage(this,"Probleme technique "+minage.error)
                             }
@@ -249,7 +261,6 @@ export class NftliveComponent implements OnInit {
                 },()=>{this.return_error()});
             }
         }
-
     }
 
     clear_preview() {
@@ -271,5 +282,27 @@ export class NftliveComponent implements OnInit {
     is_animated_photo() {
         let file=this.photo.file.substring(0,100);
         return file.indexOf("gif")>-1
+    }
+
+    ngOnDestroy(): void {
+        $$("Appel de onDestroy")
+        this.user.logout()
+    }
+
+    login(event:any) {
+        this.user.init_wallet_provider(event.provider,event.address)
+        this.show_login=false;
+    }
+
+    disconnect() {
+        this.show_login=false;
+    }
+
+    fail(addr:string) {
+        this.show_login=false;
+    }
+
+    cancel() {
+        this.show_login=false;
     }
 }

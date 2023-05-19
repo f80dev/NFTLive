@@ -1,7 +1,7 @@
 //Version 0.1
 import {Component, EventEmitter, Input, OnDestroy, OnInit, Output} from '@angular/core';
 import {NetworkService} from "../network.service";
-import {$$, isEmail, isLocal, showError, showMessage} from "../../tools";
+import {$$, isEmail, isLocal, setParams, showError, showMessage} from "../../tools";
 import {MatSnackBar} from "@angular/material/snack-bar";
 import {environment} from "../../environments/environment";
 import {Location} from "@angular/common";
@@ -78,6 +78,7 @@ export class AuthentComponent implements OnInit {
 
   relayUrl:string = "wss://relay.walletconnect.com";
   qrcode_enabled: boolean = true;
+  url_xportal_direct_connect: string="";
 
 
   constructor(
@@ -238,6 +239,7 @@ export class AuthentComponent implements OnInit {
   validate(address="") {
     if(address.length>0){
       this.address=address;
+      this._location.replaceState("/?"+setParams({toolbar:false,address:this.address,network:this.network}))
       if(this.use_cookie)localStorage.setItem("authent_address",address);
     }
 
@@ -395,6 +397,8 @@ export class AuthentComponent implements OnInit {
     await this.provider.init()
     const { uri, approval } = await this.provider.connect();
     this.qrcode=this.api.server_nfluent+"/api/qrcode/"+encodeURIComponent(uri);
+    this.url_xportal_direct_connect="https://xportal.com/?wallet-connect="+uri; //"+this.provider.?relay-protocol%3Dirn&symKey=2a0e80dd8b982dac05eef5ce071fbe541d390fc302666d09856ae379416bfa6e"
+    this.url_xportal_direct_connect="https://maiar.page.link/?apn=com.elrond.maiar.wallet&isi=1519405832&ibi=com.elrond.maiar.wallet&link="+encodeURIComponent(this.url_xportal_direct_connect);
     let address=await this.provider.login({approval});
     if(address){
       //this.init_wallet.emit({provider:this.provider,address:this.address});

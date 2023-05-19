@@ -177,6 +177,10 @@ export class UserService {
 
 
   logout() {
+    $$("Déconnexion / Logout");
+    try {
+      if(this.wallet_provider)this.wallet_provider.logout()
+    }  catch (e) {}
     this.addr = "";
     this.profil = {
       alias: "", email: "", perms: [], routes: [], access_code: "",message:""

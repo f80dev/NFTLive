@@ -1,6 +1,8 @@
+<app-hourglass style="text-align: center"
+               [message]="message"
+               [modal]="modal" ></app-hourglass>
 
-
-<div *ngIf="buy_method=='crypto' && money && wallet_provider">
+<div *ngIf="message=='' && buy_method=='crypto' && money && wallet_provider">
     <div *ngIf="money" style="margin: 15px;">
         <div style="margin: 15px;" class="mat-subheading-1">
             Coût de l'opération: {{price}} {{money!.unity}} + Frais de service
@@ -27,7 +29,7 @@
 </div>
 
 
-<div *ngIf="buy_method=='fiat' && merchant">
+<div *ngIf="message=='' && buy_method=='fiat' && merchant">
     <div style="margin: 15px;" class="mat-subheading-1">
         {{fiat_price}} {{merchant!.currency}}
     </div>

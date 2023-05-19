@@ -431,11 +431,11 @@ export class NetworkService implements OnInit {
             if(addr==null){
                 reject();
             } else {
-                if(this.network.indexOf("solana")>-1){
+                if(network.indexOf("solana")>-1){
                     let func:any=null;
 
                     if(type_addr=="owner"){
-                        this.httpClient.get(this.server_nfluent+"/api/nfts/?with_attr="+with_attr+"&limit="+limit+"&offset="+offset+"&account="+addr+"&network="+this.network).subscribe((r:any)=>{
+                        this.httpClient.get(this.server_nfluent+"/api/nfts/?withAttr="+with_attr+"&limit="+limit+"&offset="+offset+"&account="+addr+"&network="+network).subscribe((r:any)=>{
                             resolve(r);
                         })
                     }
@@ -451,8 +451,8 @@ export class NetworkService implements OnInit {
 
                 }
 
-                if(this.network.indexOf("elrond")>-1 || this.network.indexOf("polygon")>-1 || this.network.startsWith("db-")){
-                    this.httpClient.get(this.server_nfluent+"/api/nfts/?limit="+limit+"&with_attr="+with_attr+"&offset="+offset+"&account="+addr+"&network="+this.network).subscribe((r:any)=>{
+                if(network.indexOf("elrond")>-1 || network.indexOf("polygon")>-1 || network.startsWith("db-")){
+                    this.httpClient.get(this.server_nfluent+"/api/nfts/?limit="+limit+"&withAttr="+with_attr+"&offset="+offset+"&account="+addr+"&network="+network).subscribe((r:any)=>{
                         resolve({result:r,offset:offset});
                     },(err:any)=>{
                         reject(err);

@@ -7,7 +7,7 @@
 		<app-hourglass [message]="message"></app-hourglass>
 
 		<mat-vertical-stepper [linear]="false" style="width:98%;margin-left:-5px;"
-		                      *ngIf="message=='' && url_wallet==''"
+		                      *ngIf="message=='' && url_wallet=='' && !show_login"
 		                      animationDuration="1000ms">
 
 			<mat-step>
@@ -62,7 +62,7 @@
 
 				<br>
 				<mat-checkbox [(ngModel)]="joinDoc" title="Ainsi le document peut être ouvert depuis le certificat">
-					Joindre la photo originale
+					Joindre la photo originale au NFT
 				</mat-checkbox>
 			</mat-step>
 
@@ -105,13 +105,13 @@
 					</app-input>
 
 					<br>
-					<app-input label="destinataire du NFT" width="300px"
-					           help="Adresse email ou d'un wallet"
+					<app-input label="Email ou wallet pour offrir ce NFT" width="300px" style="margin-top: 50px;"
+					           help="Laissez vide si le NFT doit vous être envoyé"
 					           [value]="dests" (valueChange)="dests=$event" value_type="text"></app-input>
 
 				<br><br>
 				<button mat-raised-button color="primary"
-				        [disabled]="message.length>0 || !sel_visuel || dests.length==0"
+				        [disabled]="message.length>0 || !sel_visuel"
 				        (click)="ask_for_mint()">
 					Fabriquer !
 				</button>
@@ -119,17 +119,50 @@
 			</mat-step>
 		</mat-vertical-stepper>
 
+		<div style="display: inline-block;text-align: center;" *ngIf="message.length==0">
+			<app-authent
+					*ngIf="show_login"
+					size="350px"
+					[use_cookie]="false"
+					[showWalletConnect]="true"
+					[showWebWallet]="true"
+					[showExtensionWallet]="true"
+					(cancel)="cancel()"
+					[showCancel]="true"
+					(disconnect)="disconnect()"
+					(invalid)="fail($event)"
+					(authent)="login($event)"></app-authent>
+		</div>
 
 
 		<div *ngIf="url_gallery.length>0 && url_wallet.length>0" class="mat-body-2" style="margin-top:100px;">
-			<a [href]="url_wallet" target="walletNFluent" style="margin: 10px;">Wallet NFLUENT</a>
-			<a [href]="url_gallery" target="Gallery" style="margin: 10px;">Voir le NFT</a><br><br>
+			Voir votre NFT dans:<br><br>
+			<a [href]="url_wallet" target="walletNFluent" style="margin: 10px;">le Wallet NFLUENT</a>
+			<a [href]="url_gallery" target="Gallery" style="margin: 10px;">L'explorateur de NFT</a>
+			<br><br><br>
 
 			<button mat-raised-button color="primary" (click)="restart()">
 				Nouvelle Photo
 			</button>
 		</div>
 	</div>
+
+
+	<div style="position: absolute;display:block;z-index:10;top:-10px;right:5px;color:#a4a4a4;" *ngIf="message.length==0">
+		<button mat-icon-button (click)="show_login=true"
+		        title="Se connecter"
+		        *ngIf="!show_login && !user.isConnected()">
+			<mat-icon>login</mat-icon>
+		</button>
+
+		<button mat-icon-button (click)="user.logout()"
+		        title="Se déconnecter"
+		        *ngIf="user.isConnected()">
+			<mat-icon>logout</mat-icon>
+		</button>
+	</div>
+
+
 
 
 

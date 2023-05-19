@@ -15,7 +15,7 @@ export function _ask_for_paiement(vm:any,token_id:string,to_paid:number,to_paid_
                                   billing_address="",
                                   bill_content:{description:string,subject:string,contact:string},
                                   buy_method="",
-                                  bank:Bank)  {
+                                  bank:Bank | undefined=undefined)  {
     return new Promise((resolve, reject) => {
         if(to_paid==0 || to_paid_in_fiat==0){
             resolve({})
@@ -65,11 +65,15 @@ export class AskForPaymentComponent implements OnInit {
 
     ngOnInit(): void {
         this.buy_method=this.data.buy_method;
+        if(!this.data.merchant || (!this.data.merchant.currency && (!this.data.merchant.wallet && !this.data.merchant.wallet.token))){
+            this.dialogRef.close(true);
+        }
         if(this.data.merchant!.wallet!.token)this.nb_payment=this.nb_payment+1;
         if(this.data.merchant!.id)this.nb_payment=this.nb_payment+1;
 
         if(this.data.merchant.currency=="")this.buy_method="crypto";
         if(!this.data.merchant.wallet)this.buy_method="fiat";
+
     }
 
     onpaid($event: any) {

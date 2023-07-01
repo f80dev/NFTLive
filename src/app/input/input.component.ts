@@ -1,4 +1,5 @@
 import {Component, DoCheck, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges} from '@angular/core';
+import {MatSelectionListChange} from "@angular/material/list";
 //version 1.0 3/3/23
 
 @Component({
@@ -16,8 +17,9 @@ export class InputComponent implements OnChanges,OnInit {
 
   @Input() maxlength:string=""
   @Input() width:string="100%";
-  @Input() maxwidth:string="100vw";
+  @Input() maxwidth:string="100%";
   @Input() color_value="darkgray";
+  @Input() size_image="40px";
 
 
   @Input() options:any=[];
@@ -44,6 +46,9 @@ export class InputComponent implements OnChanges,OnInit {
   @Input() min: number=0;
   @Input() step: number=1;
   @Input() multiselect: boolean = false;
+  @Input() showClear: boolean=true
+  @Input() fontname="mat-body-2"
+  @Input() height="200px"
 
   constructor() { }
 
@@ -66,8 +71,14 @@ export class InputComponent implements OnChanges,OnInit {
   }
 
   sel_change($event: any) {
-    this.value=$event.value;
-    this.valueChange.emit($event.value);
+    if($event.hasOwnProperty("options")){
+      this.value=$event["options"][0].value
+    }else{
+      this.value=$event.value;
+    }
+
+    this.valueChange.emit(this.value);
+
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -79,11 +90,11 @@ export class InputComponent implements OnChanges,OnInit {
       for(let option of changes["options"].currentValue){
         if(typeof(option)=="string")option={label:option,value:option};
         if(typeof(option)=="object") {
-          let txt_label=option["label"] || option["name"] || option["caption"] || option["title"];
+          option.label=option["label"] || option["name"] || option["caption"] || option["title"];
           if (this.value_field.length > 0)
-            option = {label: txt_label, "value": option[this.value_field]};
+            option.value=option[this.value_field]
           else
-            option = {label: txt_label, "value": option}
+            option.value= option
         }
         this.options.push(option);
       }

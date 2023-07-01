@@ -1,4 +1,4 @@
-import {Component, OnDestroy, OnInit} from '@angular/core';
+import {Component,  OnDestroy, OnInit} from '@angular/core';
 import {NetworkService} from "../network.service";
 import {environment} from "../../environments/environment";
 import {wait_message} from "../hourglass/hourglass.component";
@@ -12,10 +12,10 @@ import {
     showMessage,
     get_nfluent_wallet_url,
     showError,
-    isEmail, rotate, now, init_visuels, extract_bank_from_param
+    isEmail, rotate, now, init_visuels, extract_bank_from_param, apply_params
 } from "../../tools";
 import {Collection, newCollection} from "../../operation";
-import {ActivatedRoute} from "@angular/router";
+import {ActivatedRoute, Router} from "@angular/router";
 import {MatSnackBar} from "@angular/material/snack-bar";
 import {StyleManagerService} from "../style-manager.service";
 import {_ask_for_paiement} from "../ask-for-payment/ask-for-payment.component";
@@ -23,6 +23,7 @@ import {UserService} from "../user.service";
 import {MatDialog} from "@angular/material/dialog";
 import {extract_merchant_from_param, Merchant} from "../payment/payment.component";
 import {DeviceService} from "../device.service";
+import {NgNavigatorShareService} from "ng-navigator-share";
 
 @Component({
   selector: 'app-nftlive',
@@ -35,7 +36,7 @@ export class NftliveComponent implements OnInit,OnDestroy {
     message="";
     sel_visuel: any;
     dests="";
-    name="Ma Photo";
+    name="";
     infos="";
     miner: CryptoKey=newCryptoKey();
     stockage: string="";
@@ -49,7 +50,7 @@ export class NftliveComponent implements OnInit,OnDestroy {
     nft_size=800;
     merchant: Merchant | undefined;
     api_key_document: string="";
-    background_image="";
+    background="";
     joinDoc: string=""
     photographer="Anonyme";
     promo="";
@@ -57,17 +58,25 @@ export class NftliveComponent implements OnInit,OnDestroy {
     show_last_step: boolean=false;
     price: number=0;
     fiat_price:number=0;
-    config: string="";
+    configs: string[]=[];
     border="2%";
-    size="90%";
+    size="100%";
+    new_account_mail=environment.appli+"/assets/wallet_access.html";
+    existing_account_mail=environment.appli+"/assets/existing_account_wallet_access.html";
     bank:Bank=environment.bank;
     royalties: number=0;
     show_login: boolean=false;
+    visual="";
+    network: string="";
+    config: string = "";
+    params: any;
 
     public constructor(
-        public network:NetworkService,
+        public router:Router,
+        public api:NetworkService,
         public routes:ActivatedRoute,
         public toast:MatSnackBar,
+        public ngShare:NgNavigatorShareService,
         public user:UserService,
         public device:DeviceService,
         public style:StyleManagerService,
@@ -75,6 +84,7 @@ export class NftliveComponent implements OnInit,OnDestroy {
     ) {
 
     }
+
 
     ngOnInit(): void {
         this.device.isHandset$.subscribe((isHandset)=>{
@@ -92,16 +102,17 @@ export class NftliveComponent implements OnInit,OnDestroy {
 
 
     onFileSelected($event: any) {
-        this.photo=$event;
+        this.photo = $event;
         this.preview()
     }
 
 
     preview(limit=10) {
         let seed=Math.round(Math.random()*100);
-
         $$("On récupére une première image et la taille de la sequences")
-        this.network.send_photo_for_nftlive(
+        this.visuels=[];
+        if(!this.photo || this.name=="")return;
+        this.api.send_photo_for_nftlive(
             limit,this.config, this.nft_size.toString(),
             80,"",[{name:"title", value:this.name}],
             {photo:this.photo}, "base64").subscribe((result:any)=>{
@@ -118,6 +129,7 @@ export class NftliveComponent implements OnInit,OnDestroy {
             //     wait_message(this,"");
             // })
         },(err)=>{
+                this.photo=undefined;
                 showError(this,err);
                 wait_message(this);
         })
@@ -126,6 +138,7 @@ export class NftliveComponent implements OnInit,OnDestroy {
     restart() {
         this.sel_visuel=undefined;
         this.url_wallet="";
+        this.name="";
         this.url_gallery="";
         this.dests="";
         this.visuels=[];
@@ -136,24 +149,23 @@ export class NftliveComponent implements OnInit,OnDestroy {
         //Lecture des paramétres
         let params: any = await getParams(this.routes);
         $$("Lecture des parametres ", params)
-        this.miner = newCryptoKey("", "", "")
         if(params.bank){
             this.bank=params.bank;
         } else {
             this.bank=extract_bank_from_param(params) || environment.bank;
         }
 
-        this.background_image=params.visual || ""
-        if(params.style)this.style.setStyle("theme",params.style);
-        this.miner = newCryptoKey("","","",params.miner || environment.nftlive.miner_key)
+        apply_params(this,params,environment.nftlive)
+
+        this.params=params;
+
         this.stockage = params.stockage || environment.stockage.stockage
         this.stockage_document = params.stockage_document || environment.stockage.stockage_document
         this.api_key_document=params.api_key_document || ""
-        this.appname = params.appname || environment.appname
-        this.claim = params.claim || environment.nftlive.claim
+
         this.collection = newCollection(params.collection || environment.nftlive.collection, this.miner)
-        this.network.network = params.network || environment.nftlive.network
         this.merchant=extract_merchant_from_param(params) || environment.merchant;
+
         this.promo=params.promotion || ""
         this.promofile=params.promolink || ""
 
@@ -163,7 +175,15 @@ export class NftliveComponent implements OnInit,OnDestroy {
 
         this.price=params.price || environment.nftlive.crypto_price
         this.fiat_price=params.fiat_price || environment.nftlive.fiat_price
-        this.config=params.config || environment.appli+"/assets/config_nftlive.yaml"
+
+        if(params.configs && typeof(params.configs)=="string")params.configs=params.configs.split(",")
+        this.configs=params.configs || [environment.appli+"/assets/config_nftlive.yaml"]
+        this.config=params.config || this.configs[0];
+
+        this.photographer=localStorage.getItem("photographer") || "Anonyme";
+        this.dests=localStorage.getItem("dests") || "";
+
+
     }
 
     return_error(){
@@ -172,6 +192,15 @@ export class NftliveComponent implements OnInit,OnDestroy {
     }
 
     async ask_for_mint(){
+        if(!this.dests){
+            this.dests=this.user.addr;
+            if(this.dests==''){
+                showMessage(this,"Indiquez l'adresse du destinataire ou connectez vous pour recevoir le NFT")
+                this.show_login=true;
+                return;
+            }
+        }
+        this.save_local();
         let rep:any=await _ask_for_paiement(this,
             this.merchant!.wallet!.token,
             this.price,
@@ -184,7 +213,7 @@ export class NftliveComponent implements OnInit,OnDestroy {
             "",{contact: "", description: "", subject: ""},"",this.bank)
 
         if(rep){
-            this.user.init_wallet_provider(rep.data.provider,rep.address)
+            if(rep.address && rep.data)this.user.init_wallet_provider(rep.data.provider,rep.address)
             this.user.buy_method=rep.buy_method;
             if(this.dests=='')this.dests=rep.address;
             this.mint();
@@ -200,26 +229,37 @@ export class NftliveComponent implements OnInit,OnDestroy {
             let idx=0;
             for(let address of this.dests.split(' ')){
                 wait_message(this,"Création d'un wallet pour "+address);
-                this.network.create_account(
-                    this.network.network,
-                    address,
-                    environment.appli+"/assets/wallet_access.html",
-                    environment.appli+"/assets/existing_account_wallet_access.html"
+                this.api.create_account(
+                    this.network, address,
+                    this.new_account_mail,
+                    this.existing_account_mail,{},false,"Création d'un compte pour votre NFT"
                 ).subscribe(async (account:any)=> {
                     wait_message(this,"Fabrication du NFT");
                     let owner=account.address
 
-                    this.network.upload(this.photo.file,this.stockage_document,this.api_key_document).subscribe(async (file:any)=>{
+                    this.api.upload(this.photo.file,this.stockage_document,this.api_key_document).subscribe(async (file:any)=>{
                         let files=(this.joinDoc=="checked") ? [file] : [];
                         if(this.photographer.length==0)this.photographer=owner;
                         let attributes=[
                             {trait_type:"Prise de vue",value:now("datetime")},
                             {trait_type:"Photographe",value:this.photographer}
                         ]
-                        if(this.promo.length>0)attributes.push({trait_type:"Evénement",value:this.promo});
+                        if(this.promo.length>0){
+                            if(this.promo.indexOf("=")==-1){
+                                attributes.push({trait_type:"Evénement",value:this.promo});
+                            }else{
+                                for(let prop of this.promo.split("\n")){
+                                    attributes.push({
+                                        trait_type: prop.split("=")[0],
+                                        value:prop.split("=")[1]
+                                    })
+                                }
+                            }
+
+                        }
                         if(this.promofile.length>0)files.push(this.promofile);
 
-                        this.network.upload(this.sel_visuel.data.src,this.stockage).subscribe(async (addr_visual:any)=>{
+                        this.api.upload(this.sel_visuel.data.src,this.stockage).subscribe(async (addr_visual:any)=>{
                             let nft:NFT={
                                 balances: undefined,
                                 type: this.max_supply==1 ? "NonFungible" : "SemiFungible",
@@ -235,7 +275,7 @@ export class NftliveComponent implements OnInit,OnDestroy {
                                 message: undefined,
                                 miner: this.miner,
                                 name: this.name,
-                                network: this.network.network,
+                                network: this.network,
                                 owner: owner,
                                 royalties: this.royalties,
                                 solana: undefined,
@@ -246,12 +286,12 @@ export class NftliveComponent implements OnInit,OnDestroy {
                             }
                             $$("Minage du NFT attribué a "+account.address,nft)
                             idx=idx+1;
-                            let minage:any=await this.network.mint(nft,this.miner,owner,"",false,this.stockage,this.network.network)
+                            let minage:any=await this.api.mint(nft,this.miner,owner,"",false,this.stockage,this.network)
 
                             wait_message(this);
                             if(minage.error==""){
                                 if(isEmail(address))showMessage(this,"Consulter votre mail "+address+" pour retrouver votre NFT")
-                                this.url_wallet=get_nfluent_wallet_url(owner,this.network.network,environment.wallet);
+                                this.url_wallet=get_nfluent_wallet_url(owner,this.network,environment.wallet);
                                 this.url_gallery=minage.link_nft_gallery;
                             } else {
                                 showMessage(this,"Probleme technique "+minage.error)
@@ -269,6 +309,11 @@ export class NftliveComponent implements OnInit,OnDestroy {
 
     select_visuel($event: GalleryState) {
         this.sel_visuel=this.visuels[$event.currIndex!];
+    }
+
+    save_local(){
+        localStorage.setItem("dests",this.dests)
+        localStorage.setItem("photograher",this.photographer)
     }
 
     async rotate_photo() {
@@ -291,6 +336,7 @@ export class NftliveComponent implements OnInit,OnDestroy {
 
     login(event:any) {
         this.user.init_wallet_provider(event.provider,event.address)
+        if(this.dests=="")this.dests=event.address;
         this.show_login=false;
     }
 
@@ -304,5 +350,38 @@ export class NftliveComponent implements OnInit,OnDestroy {
 
     cancel() {
         this.show_login=false;
+    }
+
+    logout() {
+        showMessage(this,"Déconnexion de votre compte");
+        this.user.logout()
+    }
+
+    open_about() {
+        this.router.navigate(["about"])
+    }
+
+    more_model() {
+        let pos=this.configs.indexOf(this.config)+1;
+        if(pos==this.configs.length)pos=0;
+        this.config=this.configs[pos];
+        this.preview();
+    }
+
+
+    open_share() {
+        this.ngShare.share({
+            title:this.params.appname,
+            text:this.params.claim,
+            url:this.router.url
+        })
+    }
+
+    remove_bg() {
+        wait_message(this,"Suppression du fond")
+        this.api.remove_background(this.photo).subscribe({next:(r)=>{
+            wait_message(this)
+            this.photo.fileangular=r.image;
+        },error:(err)=>{showError(this,err)}})
     }
 }

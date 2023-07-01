@@ -29,22 +29,36 @@
               "src/favicon.ico",
               "src/assets",
               "src/CNAME",
-              "src/404.html"
+              "src/404.html",
+              "src/manifest.webmanifest",
+              "src/manifest.webmanifest"
             ],
             "styles": [
-              "src/styles.css",
-              {
-                "input": "src/nfluent.scss",
-                "inject": false,
-                "bundleName": "nfluent-theme"
-              },
+              "src/styles.scss",
               {
                 "input": "src/nfluent-dark.scss",
-                "inject": false,
-                "bundleName": "nfluent-dark-theme"
+                "bundleName": "nfluent-dark",
+                "inject": false
+              },
+              {
+                "input": "src/nfluent-yellow.scss",
+                "bundleName": "nfluent-yellow",
+                "inject": false
+              },
+              {
+                "input": "src/nfluent.scss",
+                "bundleName": "nfluent",
+                "inject": false
+              },
+              {
+                "input": "src/nfluent-mvx.scss",
+                "bundleName": "nfluent-mvx",
+                "inject": false
               }
             ],
-            "scripts": []
+            "scripts": [],
+            "serviceWorker": true,
+            "ngswConfigPath": "ngsw-config.json"
           },
           "configurations": {
             "production": {
@@ -68,6 +82,27 @@
               ],
               "outputHashing": "all"
             },
+            "local": {
+              "budgets": [
+                {
+                  "type": "initial",
+                  "maximumWarning": "50mb",
+                  "maximumError": "100mb"
+                },
+                {
+                  "type": "anyComponentStyle",
+                  "maximumWarning": "500kb",
+                  "maximumError": "1000kb"
+                }
+              ],
+              "fileReplacements": [
+                {
+                  "replace": "src/environments/environment.ts",
+                  "with": "src/environments/environment.local.ts"
+                }
+              ],
+              "outputHashing": "all"
+            },
             "development": {
               "buildOptimizer": false,
               "optimization": false,
@@ -84,6 +119,9 @@
           "configurations": {
             "production": {
               "browserTarget": "NFTLive:build:production"
+            },
+            "local": {
+              "browserTarget": "NFTLive:build:local"
             },
             "development": {
               "browserTarget": "NFTLive:build:development"
@@ -106,7 +144,8 @@
             "karmaConfig": "karma.conf.js",
             "assets": [
               "src/favicon.ico",
-              "src/assets"
+              "src/assets",
+              "src/manifest.webmanifest"
             ],
             "styles": [
               "src/styles.css"

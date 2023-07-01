@@ -2,6 +2,8 @@
 // `ng build` replaces `environment.ts` with `environment.prod.ts`.
 // The list of file replacements can be found in `angular.json`.
 
+import {newCryptoKey} from "../tools";
+
 export const environment = {
     production: false,
     forum:"",
@@ -13,6 +15,8 @@ export const environment = {
     claim:"Transformer vos photos en NFT instantanément",
     appli:"https://nftlive.nfluent.io",
     wallet:"http://127.0.0.1:4200",
+    website:"https://nfluent.io",
+    faqs:"{{domain_appli}}/assets/faqs.yaml",
 
     stockage:{
         stockage_document: "infura",
@@ -30,11 +34,13 @@ export const environment = {
     },
 
     bank:{
-        miner: "nfluent: Z0FBQUFBQmtYUjJVbS1Uc0lpa2FTR2F0SnF4LW1HUHIzbHFKN2hCVmRPN3NRR1R3Wk4tUnhfcUxqUE9IQVdObzMxMHgtazhrT1hpWXVndENZallGNnI1Q2RTLVQ1N2d0TEQ2dHNmVlByV3B0RlR3SUMxejhKMHZUeVJ3NHl6dnNFNEIyZWk2eGZsS1hWU2FuQnljcGRDUEh4WFhSMTBRTFFLdHkxeTJuUjZxYWRRc1dVN2FqYlZzPQ==",
+        miner: newCryptoKey("","","","nfluent: Z0FBQUFBQmtYUjJVbS1Uc0lpa2FTR2F0SnF4LW1HUHIzbHFKN2hCVmRPN3NRR1R3Wk4tUnhfcUxqUE9IQVdObzMxMHgtazhrT1hpWXVndENZallGNnI1Q2RTLVQ1N2d0TEQ2dHNmVlByV3B0RlR3SUMxejhKMHZUeVJ3NHl6dnNFNEIyZWk2eGZsS1hWU2FuQnljcGRDUEh4WFhSMTBRTFFLdHkxeTJuUjZxYWRRc1dVN2FqYlZzPQ=="),
         title:"Bienvenu a la banque des NFluCoin",
         refund:5,
         token:"NFLUCOIN-4921ed",
-        network:"elrond-devnet"
+        network:"elrond-devnet",
+        limit: 10,
+        histo:"db-server-nfluent",
     },
 
     merchant:{

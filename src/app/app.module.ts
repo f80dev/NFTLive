@@ -1,4 +1,4 @@
-import { NgModule } from '@angular/core';
+import { NgModule, isDevMode } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import {StyleManagerService} from "./style-manager.service";
 import { AppComponent } from './app.component';
@@ -19,7 +19,7 @@ import {WebcamModule} from "ngx-webcam";
 import {ClipboardModule} from "@angular/cdk/clipboard";
 import {GoogleLoginProvider, SocialAuthServiceConfig, SocialLoginModule} from "@abacritt/angularx-social-login";
 import {MatCardModule} from "@angular/material/card";
-import {MatFormFieldControl, MatFormFieldModule} from "@angular/material/form-field";
+import { MatFormFieldModule} from "@angular/material/form-field";
 import {MatIconModule} from "@angular/material/icon";
 import {MatSelectModule} from "@angular/material/select";
 import {MatSliderModule} from "@angular/material/slider";
@@ -43,9 +43,14 @@ import {BrowserAnimationsModule} from "@angular/platform-browser/animations";
 import {MatInputModule} from "@angular/material/input";
 import {MatStepperModule} from "@angular/material/stepper";
 import {FileDragNDropDirective} from './file-drag-ndrop.directive';
+import { ServiceWorkerModule } from '@angular/service-worker';
+import {A11yModule} from "@angular/cdk/a11y";
+import { AboutComponent } from './about/about.component';
+import {MatListModule} from "@angular/material/list";
 
 
 const routes: Routes = [
+    { path: 'about', component: AboutComponent},
     { path: 'nftlive', component: NftliveComponent},
     { path: '', component: NftliveComponent},
     { path: 'admin', component: AdminComponent,pathMatch: 'full' },
@@ -71,7 +76,8 @@ const config: SocketIoConfig = { url: environment.server, options: {} };
     SplashComponent,
     ScannerComponent,
     NftliveComponent,
-    SafePipe
+    SafePipe,
+    AboutComponent
   ],
     imports: [
         BrowserModule,
@@ -102,6 +108,14 @@ const config: SocketIoConfig = { url: environment.server, options: {} };
         SocketIoModule.forRoot(config),
         RouterModule.forRoot(routes),
         MatStepperModule,
+        ServiceWorkerModule.register('ngsw-worker.js', {
+            enabled: !isDevMode(),
+            // Register the ServiceWorker as soon as the application is stable
+            // or after 30 seconds (whichever comes first).
+            registrationStrategy: 'registerWhenStable:30000'
+        }),
+        A11yModule,
+        MatListModule,
     ],
   providers: [
       DeviceService,StyleManagerService,

@@ -4,7 +4,6 @@ app-input {
 
 button {
     margin: 10px;
-    min-width: 100px;
 }
 
 mat-expansion-panel-header {

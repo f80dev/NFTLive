@@ -6,7 +6,7 @@ import {HostListener, Injectable, OnInit} from '@angular/core';
 // } from "@solana/web3.js";
 // import * as SPLToken from "@solana/spl-token";
 import {HttpClient, HttpErrorResponse} from "@angular/common/http";
-import {$$, CryptoKey, encrypt, words} from "../tools";
+import {$$, Bank, CryptoKey, encrypt, words} from "../tools";
 import {environment} from "../environments/environment";
 
 import {catchError, retry, Subject, throwError, timeout} from "rxjs";
@@ -36,11 +36,10 @@ export class NetworkService implements OnInit {
     online: boolean=true;
     keys:CryptoKey[]=[];
     config:any={};
-    networks_available:string[]=[];          //network
-    stockage_available:string[]=[];          //stockage visuel et metadata
-    stockage_document_available:string[]=[]; //stockage document attaché
-
-    chain_id="D"                               //Chain_id du réseau elrond
+    networks_available:string[]=[];             //network
+    stockage_available:string[]=[];             //stockage visuel et metadata
+    stockage_document_available:string[]=[];    //stockage document attaché
+    chain_id="D"                                //Chain_id du réseau elrond
 
     constructor(
         private httpClient : HttpClient
@@ -81,6 +80,7 @@ export class NetworkService implements OnInit {
             if(this.network){
                 this.httpClient.get<CryptoKey[]>(this.server_nfluent + "/api/keys/?access_code="+access_code+"&network=" + this.network + "&with_private=true&with_balance="+with_balance+"&operation="+operation_id,).subscribe((r: CryptoKey[]) => {
                     this.keys = r;
+                    this.network_change.next("keys");
                     this.wait();
                     resolve(r);
                 },(err:any)=>{
@@ -123,10 +123,11 @@ export class NetworkService implements OnInit {
     // }
 
 
-    burn(nft_addr:string | undefined,key:string,network="elrond-devnet",delay=1) {
+    burn(nft_addr:string | undefined,key:CryptoKey,network="elrond-devnet",quantity=1) {
         return new Promise((resolve, reject) => {
             this.wait("En cours de destruction");
-            this.httpClient.get(this.server_nfluent+"/api/burn?&delay="+delay+"&account="+nft_addr+"&keyfile="+key+"&network="+network).subscribe((r:any)=>{
+            let body={miner:key}
+            this.httpClient.post(this.server_nfluent+"/api/burn/?&nft_addr="+nft_addr+"&quantity="+quantity+"&network="+network,body).subscribe((r:any)=>{
                 this.wait("");
                 if(r.result=="error")
                     reject(r.error);
@@ -162,6 +163,8 @@ export class NetworkService implements OnInit {
     }
 
 
+
+
     archive(tokens: any) {
         return new Promise((resolve, reject) => {
             this.httpClient.post(this.server_nfluent+"/api/export/",tokens).subscribe((r)=>{
@@ -172,8 +175,8 @@ export class NetworkService implements OnInit {
         });
     }
 
-    encrypte_key(name:string,network:string,privateKey="") {
-        let body={secret_key:privateKey,alias:name}
+    encrypte_key(name:string,network:string,privateKey="",address="") {
+        let body={secret_key:privateKey,alias:name,address:address}
         return this._post("encrypt_key/"+network+"/","",body)
     }
 
@@ -422,9 +425,17 @@ export class NetworkService implements OnInit {
         return this.httpClient.post<any>(url+"?"+param,body).pipe(retry(1),timeout(_timeout),catchError(this.handleError))
     }
 
+    _delete(url: string, param: string="") {
+        if(!url.startsWith("http")){
+            url="/api/"+url;
+            url=this.server_nfluent+url.replace("//","/").replace("/api/api/","/api/")
+        }
+        return this.httpClient.delete(url+"?"+param).pipe(retry(1),timeout(2000),catchError(this.handleError))
+    }
 
 
-    get_tokens_from(type_addr:string,addr:string,limit=100,with_attr=true,filter:any=null,offset=0,network="elrond-devnet") : Promise<{result:any[],offset:number}> {
+
+    get_tokens_from(type_addr:string,addr:string,limit=100,with_attr=true,filter:any=null,offset=0,network="elrond-devnet") : Promise<{result:NFT[],offset:number}> {
 
         $$("Recherche de token par "+type_addr)
         return new Promise((resolve,reject) => {
@@ -441,12 +452,12 @@ export class NetworkService implements OnInit {
                     }
 
                     if(type_addr=="token"){
-                        this.build_token_from_solscan(addr).then((token:SolanaToken)=>{
-                            resolve({result:[token],offset:0});
-                        }).catch((err)=>{
-                            reject(err);
-                        });
-                        return;
+                        // this.build_token_from_solscan(addr).then((token:SolanaToken)=>{
+                        //     resolve({result:[token],offset:0});
+                        // }).catch((err)=>{
+                        //     reject(err);
+                        // });
+                        // return;
                     }
 
                 }
@@ -498,6 +509,8 @@ export class NetworkService implements OnInit {
         setTimeout(()=>{this.waiting=""},durationInSec*1000);
     }
 
+
+
     isElrond(addr="") {
         if(addr==null)return false;
         if(addr.length==0){
@@ -517,6 +530,13 @@ export class NetworkService implements OnInit {
         if(network=="")network=this.network;
         return network.indexOf("polygon")>-1;
     }
+
+    isDatabase(network="") {
+        if(network=="")network=this.network;
+        return network.startsWith("dao-") || network.startsWith("db-");
+    }
+
+
 
     get_nfts_balance_from_ftx(){
         return this.httpClient.get("https://ftx.us/api/nft/balances")
@@ -690,6 +710,8 @@ export class NetworkService implements OnInit {
         return this.httpClient.post(this.server_nfluent+"/api/send_email_to_contact/",body);
     }
 
+
+
     send_transaction_confirmation(email: string, body: any) {
         return this.httpClient.post(this.server_nfluent+"/api/send_transaction_confirmation/"+email+"/",body)
     }
@@ -707,8 +729,8 @@ export class NetworkService implements OnInit {
         return this._get("/palettes/");
     }
 
-    getfaqs() {
-        return this._get("/getyaml/faqs/","dir=./flaskr/static");
+    getfaqs(file="") {
+        return this._get("/getyaml/","url="+file);
     }
 
     del_config(id_config:string,user:string="") {
@@ -766,13 +788,17 @@ export class NetworkService implements OnInit {
         return this.httpClient.post(this.server_nfluent+"/api/generate_svg/",data);
     }
 
-    create_account(network: string, email: string,new_account_mail="mail_new_account",existing_account_mail="mail_existing_account",dictionnary={}) {
+    create_account(network: string, email: string,
+                   new_account_mail="mail_new_account.html",
+                   existing_account_mail="mail_existing_account.html",dictionnary={},force=false,subject="Votre nouveau wallet") {
         //On pourra utiliser %network% pour inserer le nom du réseau dans le nom des emails de confirmations
         let body={
             email:email,
+            subject:subject,
             mail_new_wallet:new_account_mail.replace("%network%",network.split("-")[0]),
             mail_existing_wallet:existing_account_mail.replace("%network%",network.split("-")[0]),
-            dictionnary:dictionnary
+            dictionnary:dictionnary,
+            force:force
         }
         return this.httpClient.post(this.server_nfluent+"/api/keys/?network="+network,body);
     }
@@ -854,15 +880,15 @@ export class NetworkService implements OnInit {
     }
 
 
-    refund(_from:CryptoKey,dest:string,token_id: string="egld",amount:number=1.0,comment="",network="elrond-devnet") {
+    refund(bank:Bank,dest:string,comment="") {
         //@bp.route('/refund/<address>/<amount>/<token>/',methods=["POST"])
-        let body={bank:_from,data:comment,network:network}
-        return this._post("refund/"+dest+"/"+amount+"/"+token_id+"/","",body,120000);
+        let body={bank:bank.miner,data:comment,network:bank.network,limit:bank.limit,histo:bank.histo}
+        return this._post("refund/"+dest+"/"+bank.refund+"/"+bank.token+"/","",body,200000);
     }
 
-    get_collections(owners_or_collections: string,network="",detail=false) {
+    get_collections(owners_or_collections: string,network="",detail=false,limit=300) {
         if(network.length==0)network=this.network;
-        let url=this.server_nfluent+"/api/collections/"+owners_or_collections+"/?network="+network+"&detail="+detail+"&operations=canCreate";
+        let url=this.server_nfluent+"/api/collections/"+owners_or_collections+"/?network="+network+"&limit="+limit+"&detail="+detail+"&operations=canCreate";
         return this.httpClient.get<Collection[]>(url);
     }
 
@@ -923,9 +949,12 @@ export class NetworkService implements OnInit {
         return this.httpClient.delete(this.server_nfluent+"/api/minerpool/"+id+"/");
     }
 
-    getExplorer(addr:string | undefined,_type="address") : string {
-        if(this.isElrond())
-            return "https://"+(this.isMain() ? "" : "devnet.")+"xspotlight.com/"+addr;
+    getExplorer(addr:string | undefined,_type="address",tools="xspotlight") : string {
+        if(this.isElrond(addr)){
+            if(tools=="xspotlight")return "https://"+(this.isMain() ? "" : "devnet.")+"xspotlight.com/"+addr;
+            if(tools=="explorer")return "https://"+(this.isMain() ? "" : "devnet-")+"explorer.multiversx.com/"+_type+"/"+addr;
+        }
+
         if(this.isPolygon()){
             if(this.isMain()){
                 return "https://polygonscan.com/"+_type+"/"+addr;
@@ -1036,12 +1065,12 @@ export class NetworkService implements OnInit {
     }
 
     get_sequence(layers: Layer[], limit: number,config:string="") {
-        return this._post("get_sequence/","",{layers:layers,limit:limit,config:config});
+        return this._post("get_sequence/","",{layers:layers,limit:limit,config:config},600000);
     }
 
 
-    get_composition(items:any[],layers:any[],data:any,size:string="500x500",format="webp",platform="server") {
-        return this._post("get_composition/","",{format:format,size:size,data:data,items:items,layers:layers,platform:platform},200000);
+    get_composition(item:any,layers:any[],data:any,size:string="500x500",format="webp",platform="server") {
+        return this._post("get_composition/","",{format:format,size:size,data:data,items:item,layers:layers,platform:platform},200000);
     }
 
     create_zip(files:string[],email:string="") {
@@ -1070,5 +1099,30 @@ export class NetworkService implements OnInit {
             description:description
         }
         return this._post("send_bill/","",body,200000);
+    }
+
+    delete_file(filename:string) {
+        return this._delete("files/"+filename)
+    }
+
+    set_account_settings(address:string,exclude_collection_from_gallery:string[]){
+        let body={exclude_from_gallery:exclude_collection_from_gallery}
+        return this._post("account_settings/"+address,"",body);
+    }
+
+    get_account_settings(address:string){
+        return this._get("account_settings/"+address);
+    }
+
+    canvas(svg: string,width="100%",height="100%") {
+        return this._get("canvas/","svg="+encodeURIComponent(svg)+"&width="+width+"&height="+height);
+    }
+
+    create_short_link(body:any) {
+        return this._post("short_link/","",body)
+    }
+
+    find_tokens(network: string, filter: string,with_detail=false,limit=200) {
+        return this._get("tokens/","network="+network+"&filter="+filter+"&with_detail="+with_detail+"&limit="+limit)
     }
 }

@@ -20,17 +20,11 @@ layers:
   - params: {}
     name: text_logo
     elements:
-      - image: "https://nfluent.io/assets/polaroid.svg"
+      - image: "https://nftlive.nfluent.io/assets/polaroid.svg"
         type: image/svg
         name: polaroid
 
-      - image: "https://nfluent.io/assets/simple_blanc.svg"
-        type: image/svg
-        name: rond_flou
 
-      - image: "https://nfluent.io/assets/simple.svg"
-        type: image/svg
-        name: simple
 
     text: ""
     unique: false

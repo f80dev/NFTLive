@@ -1,5 +1,5 @@
 //Version 0.1
-import {Component, EventEmitter, Input, OnDestroy, OnInit, Output} from '@angular/core';
+import {Component, EventEmitter, Input, OnChanges, OnDestroy, OnInit, Output, SimpleChanges} from '@angular/core';
 import {NetworkService} from "../network.service";
 import {$$, isEmail, isLocal, now, setParams, showError, showMessage} from "../../tools";
 import {MatSnackBar} from "@angular/material/snack-bar";
@@ -11,9 +11,12 @@ import {Connexion, Operation} from "../../operation";
 import {ADDR_ADMIN} from "../../definitions";
 import {DeviceService} from "../device.service";
 import { WalletConnectV2Provider } from "@multiversx/sdk-wallet-connect-provider";
+
 import { ExtensionProvider } from "@multiversx/sdk-extension-provider";
 import {WALLET_PROVIDER_DEVNET, WALLET_PROVIDER_MAINNET, WalletProvider} from "@multiversx/sdk-web-wallet-provider/out";
 import {Socket} from "ngx-socket-io";
+import {EvmWalletServiceService} from "../evm-wallet-service.service";
+import {_prompt} from "../prompt/prompt.component";
 
 //Installation de @multiversx/sdk-wallet-connect-provider via yarn add @multiversx/sdk-wallet-connect-provider
 
@@ -22,10 +25,10 @@ import {Socket} from "ngx-socket-io";
   templateUrl: './authent.component.html',
   styleUrls: ['./authent.component.css']
 })
-export class AuthentComponent implements OnInit {
+export class AuthentComponent implements OnInit,OnChanges {
 
   @Input() intro_message:string="";
-  @Input() network:string="elrond-devnet";
+  @Input() network:string="";
   @Input() connexion:Connexion | undefined;
 
   @Input() paiement:{address:string, amount:number,description:string} | undefined;
@@ -57,6 +60,7 @@ export class AuthentComponent implements OnInit {
   @Input() showNetwork=false;
   @Input() showPrivateKey=false;
   @Input() showEmail=false;             //Code d'accès envoyé par email
+  @Input() showKeystore=false;             //Code d'accès envoyé par email
   @Input() showNfluentWalletConnect=false;
   @Input() address: string="";
   @Input() nfluent_server: string=environment.server;
@@ -79,8 +83,6 @@ export class AuthentComponent implements OnInit {
   relayUrl:string = "wss://relay.walletconnect.com";
   qrcode_enabled: boolean = true;
   url_xportal_direct_connect: string="";
-  web3Provider: any;
-
 
   constructor(
       public api:NetworkService,
@@ -89,22 +91,11 @@ export class AuthentComponent implements OnInit {
       public routes:ActivatedRoute,
       public device:DeviceService,
       public socialAuthService: SocialAuthService,
-      public toast:MatSnackBar
+      public toast:MatSnackBar,
+      public evmwalletservice:EvmWalletServiceService
   ) {
-
-    const callbacks:any ={
-      onClientLogin: async ()=> {
-        this.address=await this.provider.getAddress();
-      },
-      onClientLogout: ()=> {},
-    }
-
-    this.provider = new WalletConnectV2Provider(callbacks, this.get_chain_id(), this.relayUrl, this.walletConnect_ProjectId);
   }
 
-  async init_wallet_provider(){
-    await this.provider.init();
-  }
 
   private toHex(stringToConvert: string) {
     return stringToConvert
@@ -117,7 +108,7 @@ export class AuthentComponent implements OnInit {
   refresh(){
     $$("Refresh de l'écran");
     if (this.provider) {
-      this.init_wallet_provider().then(()=>{
+      this.provider.init().then(()=>{
         if(this.showWalletConnect && this.directShowQRCode)this.open_wallet_connect()
       });
 
@@ -153,27 +144,39 @@ export class AuthentComponent implements OnInit {
   ngOnInit(): void {
     this.api.server_nfluent=this.nfluent_server;
 
+    if(this.network.indexOf("elrond")>-1){
+      const callbacks:any ={
+        onClientLogin: async ()=> {
+          this.address=await this.provider.getAddress();
+        },
+        onClientLogout: ()=> {},
+      }
+      this.provider = new WalletConnectV2Provider(callbacks, this.get_chain_id(), this.relayUrl, this.walletConnect_ProjectId);
+    }
+
+    if(this.network.indexOf("polygon")>-1){
+    }
+
+
     this.address="";
     if(this.use_cookie)this.address=localStorage.getItem("authent_address") || "";
 
     if(this.connexion){
       this.showWalletConnect=this.connexion.wallet_connect;
-      this.showWebWallet=this.showWalletConnect
-      this.showExtensionWallet=this.showWalletConnect
-
+      this.showWebWallet=this.connexion.web_wallet
+      this.showExtensionWallet=this.connexion.extension_wallet
+      this.showKeystore=this.connexion.keystore
       this.showGoogle = this.connexion.google
       this.showWebcam = this.connexion.webcam
       this.showAddress = this.connexion.address
+      this.showEmail=this.connexion.email
+
       this.showNfluentWalletConnect = this.connexion.nfluent_wallet_connect
     }
 
     this.device.isHandset$.subscribe((r:boolean)=>{
       if(r){
         this.showExtensionWallet=false;
-      }
-
-      if(this.showWalletConnect && !this.showWebWallet && !this.showExtensionWallet){
-        this.open_wallet_connect();
       }
     });
 
@@ -223,6 +226,10 @@ export class AuthentComponent implements OnInit {
     //     }
     //   )
     // } else this.refresh();
+
+    if(this.showWalletConnect && !this.showExtensionWallet && !this.showWebWallet){
+      setTimeout(()=>{this.open_wallet_connect();},500)
+    }
   }
 
 
@@ -270,6 +277,7 @@ export class AuthentComponent implements OnInit {
 
 
   connect(network: string) {
+    debugger
     if(network=="elrond"){
       // @ts-ignore
       open(this.network.url_wallet(),"walletElrond")
@@ -307,6 +315,7 @@ export class AuthentComponent implements OnInit {
 
     if(network=="code"){
       if(this.access_code && this.access_code.length==8){
+        debugger
         this.api.access_code_checking(this.access_code,this.address).subscribe(()=>{
           this.strong_connect();
         },(err:any)=>{
@@ -315,8 +324,8 @@ export class AuthentComponent implements OnInit {
       }
     }
 
-    if(network=="private_key" && this.access_code.split(" ").length>=12){
-      this.api.check_private_key(this.private_key,this.address).subscribe(()=>{
+    if(network=="private_key" && this.private_key.split(" ").length>=12){
+      this.api.check_private_key(this.private_key,this.address,this.network).subscribe(()=>{
         this.strong_connect();
       },()=>{
         showMessage(this,'Phrase incorrecte');
@@ -432,25 +441,8 @@ export class AuthentComponent implements OnInit {
 
   async open_polygon_extension_wallet() {
     //Voir https://medium.com/upstate-interactive/how-to-connect-an-angular-application-to-a-smart-contract-using-web3js-f83689fb6909
-
-
-    // @ts-ignore
-    let ethereum = window.ethereum;
-    if (typeof ethereum !== 'undefined') {
-      console.log('MetaMask is installed!');
-    }
-    if (ethereum) {
-      this.web3Provider = ethereum;
-      try {
-        // Request account access
-        ethereum.request({ method: 'eth_requestAccounts' }).then( (address:any) => {
-          console.log("Account connected: ", address[0]); // Account address that you had imported
-        });
-      } catch (error) {
-        // User denied account access...
-        console.error("User denied account access");
-      }
-    }
+    let r=await this.evmwalletservice.connectWallet()
+    if(this.address!="")this.success();
   }
 
   open_xportal() {
@@ -465,5 +457,34 @@ export class AuthentComponent implements OnInit {
   active_webcam() {
     this.enabled_webcam=true;
     this.nfluent_wallet_connect_qrcode='';
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if(this.network.indexOf("polygon")>-1){
+      this.evmwalletservice.checkWalletConnected().then((accounts:any[])=>{
+        this.address=accounts[0]
+        this.strong=true;
+      })
+    }
+
+    if(this.showWalletConnect && !this.showWebWallet && !this.showExtensionWallet){
+      if(this.network.indexOf("elrond")>-1)this.open_wallet_connect();
+
+    }
+  }
+
+  async upload_keystore($event: any) {
+    let password=await _prompt(this,"Mot de passe du keystore","","","text","ok","annuler",false)
+    this.api.encrypte_key("",this.network,"","").subscribe({
+      next:(r:any)=>{this.strong=true;this.address=r.address;this.success();}
+    })
+  }
+
+    run_scanner() {
+      this.enabled_webcam=true;
+    }
+
+  on_retreive_address($event: any) {
+    this.address=$event.address;
   }
 }

@@ -1,9 +1,7 @@
 import {environment} from "./environments/environment";
-import {ActivatedRoute, Params} from "@angular/router";
-import {NFT} from "./nft";
+import {ActivatedRoute} from "@angular/router";
 import {Clipboard} from "@angular/cdk/clipboard";
-import {NFLUENT_WALLET} from "./definitions";
-import {ImageItem} from "ng-gallery";
+
 
 export interface CryptoKey {
   name: string | null
@@ -34,17 +32,6 @@ export function url_wallet(network:string) : string {
   } else {
     return "";
   }
-}
-
-export function get_nfluent_wallet_url(address:string,network:string,domain_appli:string=NFLUENT_WALLET,take_photo=false,) : string {
-  let url=domain_appli+"/?"+setParams({
-    toolbar:false,
-    address:address,
-    takePhoto:take_photo,
-    network:network
-  })
-  url=url.replace("//?","/?");
-  return url;
 }
 
 
@@ -105,7 +92,7 @@ export function getBrowserName() {
 }
 
 
-export function setParams(_d:any,prefix="",param_name="p") : string {
+export function setParams(_d:any,prefix="",param_name="p",domain="") : string {
   //Encryptage des parametres de l'url
   //Version 1.0
   let rc=[];
@@ -115,10 +102,17 @@ export function setParams(_d:any,prefix="",param_name="p") : string {
     rc.push(k+"="+encodeURIComponent(_d[k]));
   }
   let url=encrypt(prefix+rc.join("&"));
+  if(domain!=""){
+    if(domain.indexOf("?")>-1){
+      domain=domain+"&"
+    }else{
+      domain=domain+"?"
+    }
+  }
   if(param_name!="")
-    return param_name+"="+encodeURIComponent(url);
+    return domain+param_name+"="+encodeURIComponent(url);
   else
-    return encodeURIComponent(url);
+    return domain+encodeURIComponent(url);
 }
 
 export function enterFullScreen(element:any) {
@@ -164,11 +158,12 @@ export function analyse_params(params:string):any {
   return rc;
 }
 
-export function now(format="number") : any {
+export function now(format="number",offset_in_sec=0) : any {
+  let d=new Date(new Date().getTime()+offset_in_sec*1000);
   let rc=new Date().getTime();
-  if(format=="date")return new Date().toLocaleDateString();
-  if(format=="time")return new Date().toLocaleTimeString();
-  if(format=="datetime")return new Date().toLocaleString();
+  if(format=="date")return d.toLocaleDateString();
+  if(format=="time")return d.toLocaleTimeString();
+  if(format=="datetime")return d.toLocaleString();
   if(format=="rand")return (Math.random()*10000).toString(16);
   if(format=="hex")return rc.toString(16);
   if(format=="dec" || format=="str")return rc.toString();
@@ -200,11 +195,6 @@ export function exportToCsv(filename: string, rows: object[],separator=";",cr="\
       download_file(csvContent,filename)
 }
 
-export function init_visuels(images:any[]){
-  return(images.map((x:any)=>{
-    return new ImageItem({src:x,thumb:x});
-  }));
-}
 
 //tag #save_file save local
 export function download_file(content:string,filename:string,_type='text/csv;charset=utf-8;'){
@@ -233,6 +223,35 @@ function drawRotated(canvas:any, image:any, degrees:any) {
   ctx.restore();
 }
 
+
+export function showIosInstallModal(localStorageKey: string="ios_install"): boolean {
+  // detect if the device is on iOS
+  //voir https://medium.com/ngconf/installing-your-pwa-on-ios-d1c497968e62
+  const isIos = () => {
+    const userAgent = window.navigator.userAgent.toLowerCase();
+    return /iphone|ipad|ipod/.test(userAgent);
+  };
+
+  // check if the device is in standalone mode
+  const isInStandaloneMode = () => {
+    return (
+        "standalone" in (window as any).navigator &&
+        (window as any).navigator.standalone
+    );
+  };
+
+  // show the modal only once
+  const localStorageKeyValue = localStorage.getItem(localStorageKey);
+  const iosInstallModalShown = localStorageKeyValue
+      ? JSON.parse(localStorageKeyValue)
+      : false;
+  const shouldShowModalResponse =
+      isIos() && !isInStandaloneMode() && !iosInstallModalShown;
+  if (shouldShowModalResponse) {
+    localStorage.setItem(localStorageKey, "true");
+  }
+  return shouldShowModalResponse;
+}
 
 
 /**
@@ -277,7 +296,6 @@ export function apply_params(vm:any,params:any,env:any={}){
     if(params.favicon)vm.device.setFavicon(params.favicon || "favicon.ico");
   }
 
-  debugger
   let style=params.style || env.style;
   if(style && vm.hasOwnProperty("style")){
     vm.style.setStyle("theme","./"+style);
@@ -285,7 +303,7 @@ export function apply_params(vm:any,params:any,env:any={}){
   if(vm.hasOwnProperty("miner"))vm.miner = newCryptoKey("","","",params.miner || env.miner)
   if(vm.hasOwnProperty("user")){
     vm.user.params = params;
-    $$("Conservation des parametres dans le service user")
+    $$("Conservation des paramètres dans le service user")
   }
 }
 
@@ -327,7 +345,14 @@ export function getParams(routes:ActivatedRoute,local_setting_params="",force_tr
 }
 
 export function decrypt(s:string | any) : string {
-  if(s)return atob(s);
+  if(s){
+    try{
+      return atob(s);
+    }catch (e){
+      $$("Impossible de décoder les paramètres ",s)
+    }
+
+  }
   return "";
 }
 
@@ -495,11 +520,6 @@ export function copyAchievements(clp:Clipboard,to_copy:string) {
 
 }
 
-export function canTransfer(nft:NFT,address:string) : boolean {
-  if(!nft.balances.hasOwnProperty(address))return false;
-  if(nft.balances[address]==0)return false;
-  return true;
-}
 
 
 export function find_miner_from_operation(operation:any,addr:string) : any {
@@ -565,6 +585,7 @@ export interface Bank {
   network: string
   token: string
   limit:number //Limit de rechargement par jour
+  wallet_limit: number
   histo: string //Base de données de stockage de l'historique des transactions
 }
 
@@ -584,6 +605,7 @@ export function extract_bank_from_param(params:any) : Bank | undefined {
       refund: params["bank.refund"],
       title: params["bank.title"],
       token: params["bank.token"],
+      wallet_limit:params["bank.wallet_limit"],
       limit: params["bank.limit"],
       histo:params["bank.histo"],
     }

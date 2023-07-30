@@ -75,10 +75,10 @@ export class NetworkService implements OnInit {
 
     init_keys(with_balance=false,access_code:string="",operation_id:string="",network="") {
         if(network.length==0)network=this.network;
-        return new Promise((resolve, reject) => {
+        return new Promise<CryptoKey[]>((resolve, reject) => {
             this.wait("Chargement des clés");
-            if(this.network){
-                this.httpClient.get<CryptoKey[]>(this.server_nfluent + "/api/keys/?access_code="+access_code+"&network=" + this.network + "&with_private=true&with_balance="+with_balance+"&operation="+operation_id,).subscribe((r: CryptoKey[]) => {
+            if(network!=''){
+                this.httpClient.get<CryptoKey[]>(this.server_nfluent + "/api/keys/?access_code="+access_code+"&network=" + network + "&with_private=true&with_balance="+with_balance+"&operation="+operation_id,).subscribe((r: CryptoKey[]) => {
                     this.keys = r;
                     this.network_change.next("keys");
                     this.wait();
@@ -129,8 +129,10 @@ export class NetworkService implements OnInit {
             let body={miner:key}
             this.httpClient.post(this.server_nfluent+"/api/burn/?&nft_addr="+nft_addr+"&quantity="+quantity+"&network="+network,body).subscribe((r:any)=>{
                 this.wait("");
-                if(r.result=="error")
-                    reject(r.error);
+                if(r.result=="error"){
+                    $$("Impossible "+r.error)
+                    resolve(r.error);
+                }
                 else
                     resolve(r.out);
             })
@@ -413,6 +415,7 @@ export class NetworkService implements OnInit {
             url="/api/"+url;
             url=this.server_nfluent+url.replace("//","/").replace("/api/api/","/api/")
         }
+        $$("Appel de "+url+"?"+param)
         return this.httpClient.get<any>(url+"?"+param).pipe(retry(1),timeout(_timeout),catchError(this.handleError))
     }
 
@@ -976,8 +979,8 @@ export class NetworkService implements OnInit {
         return this.httpClient.get(this.server_nfluent+"/api/access_code_checking/"+access_code+"/"+address+"/");
     }
 
-    check_private_key(seed: string, address: string) {
-        return this.httpClient.get(this.server_nfluent+"/api/check_private_key/"+seed+"/"+address+"/"+this.network);
+    check_private_key(seed: string, address: string,network:string) {
+        return this.httpClient.get(this.server_nfluent+"/api/check_private_key/"+seed+"/"+address+"/"+network);
     }
 
     getBalance(addr:string,network:string,token_id="") {

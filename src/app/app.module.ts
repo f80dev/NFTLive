@@ -33,7 +33,7 @@ import {SocketIoConfig, SocketIoModule} from "ngx-socket-io";
 import {environment} from "../environments/environment";
 import { NftliveComponent } from './nftlive/nftlive.component';
 import { SafePipe } from './safe.pipe';
-import {FormsModule} from "@angular/forms";
+import {FormsModule, ReactiveFormsModule} from "@angular/forms";
 import {MatExpansionModule} from "@angular/material/expansion";
 import {MatCheckboxModule} from "@angular/material/checkbox";
 import {AskForPaymentComponent} from "./ask-for-payment/ask-for-payment.component";
@@ -47,7 +47,8 @@ import { ServiceWorkerModule } from '@angular/service-worker';
 import {A11yModule} from "@angular/cdk/a11y";
 import { AboutComponent } from './about/about.component';
 import {MatListModule} from "@angular/material/list";
-
+import {FilterPipe} from "./filter.pipe";
+import {GOOGLE_CLIENT_ID} from "../definitions";
 
 const routes: Routes = [
     { path: 'about', component: AboutComponent},
@@ -56,7 +57,7 @@ const routes: Routes = [
     { path: 'admin', component: AdminComponent,pathMatch: 'full' },
 ]
 
-export const GOOGLE_CLIENT_ID="167299914377-p8vuf2f6npqnigl5kpqrh34cqjd81eko.apps.googleusercontent.com"
+
 const config: SocketIoConfig = { url: environment.server, options: {} };
 
 @NgModule({
@@ -77,10 +78,12 @@ const config: SocketIoConfig = { url: environment.server, options: {} };
     ScannerComponent,
     NftliveComponent,
     SafePipe,
+      FilterPipe,
     AboutComponent
   ],
     imports: [
         BrowserModule,
+        ReactiveFormsModule,
         MatProgressSpinnerModule,
         WebcamModule,
         ClipboardModule,
@@ -115,7 +118,7 @@ const config: SocketIoConfig = { url: environment.server, options: {} };
             registrationStrategy: 'registerWhenStable:30000'
         }),
         A11yModule,
-        MatListModule,
+        MatListModule
     ],
   providers: [
       DeviceService,StyleManagerService,
@@ -140,4 +143,4 @@ const config: SocketIoConfig = { url: environment.server, options: {} };
   ],
   bootstrap: [AppComponent]
 })
-export class AppModule { }
+export class AppModule {}

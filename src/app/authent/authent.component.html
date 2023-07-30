@@ -80,14 +80,15 @@
                 title="Flasher avec votre wallet nfluent"
                 [cdkCopyToClipboard]="nfluent_wallet_connect_qrcode"
                 [src]="nfluent_wallet_connect_qrcode"
-                style="cursor: copy;max-width: 90%;" [style.width]="size"><br>
+                style="cursor: copy;max-width: 90%;"
+                [style.width]="size"><br>
         <small>Flashez depuis votre wallet NFluent</small>
       </div>
 
     </mat-expansion-panel>
     <mat-expansion-panel *ngIf="showAccesCode || showPrivateKey">
       <mat-expansion-panel-header>Utiliser votre clé secrète</mat-expansion-panel-header>
-      <div style="max-width: 500px;width:80%;display: inline-block;text-align: center;">
+      <div style="max-width: 500px;width:100%;display: inline-block;text-align: center;">
         <app-input *ngIf="showAccesCode"
                    [value]="access_code"
                    (valueChange)="access_code=$event"
@@ -103,42 +104,65 @@
         </app-input>
       </div>
     </mat-expansion-panel>
-    <mat-expansion-panel *ngIf="showEmail || showGoogle">
-      <mat-expansion-panel-header>Utiliser votre email</mat-expansion-panel-header>
+
+    <mat-expansion-panel *ngIf="showKeystore">
+      <mat-expansion-panel-header>Utiliser le KeyStore</mat-expansion-panel-header>
+      <app-upload-file extensions=".json"
+                       [zone]="true"
+                       height="70px"
+                       (uploaded)="upload_keystore($event)">
+      </app-upload-file>
+    </mat-expansion-panel>
+
+      <mat-expansion-panel *ngIf="showEmail || showGoogle || showAddress">
+      <mat-expansion-panel-header>Utiliser votre email ou adresse de wallet</mat-expansion-panel-header>
       <div style="display: flex;flex-wrap:wrap;width:100%;justify-content: center;align-items: center;">
 
+        <app-scanner *ngIf="enabled_webcam && showAddress"
+                     size="200px"
+                     title="Montrer le QRcode de votre wallet à cette caméra"
+                     (flash)="on_retreive_address($event)"
+                     (cancel)="cancel_webcam()">
+        </app-scanner>
+
+
         <!--    voir https://www.npmjs.com/package/@abacritt/angularx-social-login-->
-        <asl-google-signin-button  *ngIf="showGoogle && address.length==0"
-                                   style="height: 50px;"
-                                   [type]="(device.isHandset$ | async) ? 'icon' : 'standard'" size="medium"
-                                   title="Authentification simplifiée pour les utisateurs de gmail">
+        <asl-google-signin-button *ngIf="showGoogle && address.length==0" style="height: 50px;"
+                                  title="Authentification simplifiée pour les utisateurs de gmail">
         </asl-google-signin-button>
 
-        <app-input *ngIf="showEmail"
-                   width="300px"
-                   [label]="intro_message"
-                   [placeholder]="prompt"
-                   [value]="address" (valueChange)="update_address($event)"
-                   (validate)="validate($event)"
-                   label_button="Valider"
-                   [help]="explain_message">
-        </app-input>
+        <div *ngIf="showEmail || showAddress">
+          <app-input
+                  width="300px"
+                  [label]="intro_message"
+                  [placeholder]="prompt"
+                  [value]="address" (valueChange)="update_address($event)"
+                  (validate)="validate($event)"
+                  label_button="Valider"
+                  [help]="explain_message">
+          </app-input>
+          <button mat-icon-button (click)="run_scanner()"
+                  *ngIf="address==''"><mat-icon>qr_code_scanner</mat-icon></button>
+        </div>
+
       </div>
     </mat-expansion-panel>
-    <mat-expansion-panel *ngIf="qrcode.length==0 && network.indexOf('polygon')>-1" class="polygon-background">
-      <mat-expansion-panel-header class="color-primary">Utiliser l'extension</mat-expansion-panel-header>
-      <button type="button" mat-raised-button class="polygon-button"
-              *ngIf="showWalletConnect && qrcode.length==0"
-              (click)="open_polygon_extension_wallet()">
-        Extension Chrome
-      </button>
-    </mat-expansion-panel>
+
+
+
   </mat-accordion>
 
   <!--  https://css-tricks.com/snippets/css/a-guide-to-flexbox/ -->
 
+  <mat-expansion-panel *ngIf="network.indexOf('polygon')>-1 && showExtensionWallet" class="polygon-background">
+    <mat-expansion-panel-header class="color-primary">Authentification Polygon</mat-expansion-panel-header>
+    <button type="button" mat-raised-button class="polygon-button"
+            (click)="open_polygon_extension_wallet()">
+      Extension Chrome
+    </button>
+  </mat-expansion-panel>
 
-  <div *ngIf="directShowQRCode">
+  <div *ngIf="directShowQRCode && network.indexOf('elrond')>-1">
     <div *ngIf="nfluent_wallet_connect_qrcode.length>0 && showNfluentWalletConnect"
          [style.opacity]="qrcode_enabled ? 1 : 0.5" >
       <img

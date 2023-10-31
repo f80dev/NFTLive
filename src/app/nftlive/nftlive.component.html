@@ -1,202 +1,216 @@
 <app-splash
-		[appname]="appname"
-		[duration]="2000"
-		[image]="visual"
-		[description]="claim"></app-splash>
+  [appname]="appname"
+  [duration]="intro"
+  [image]="visual"
+  [description]="claim"></app-splash>
+
+
+<app-tuto title="{{appname}} transforme vos photos en NFT en quelques cliques"
+          background="https://images.unsplash.com/photo-1512790182412-b19e6d62bc39?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1932&q=80"
+          [duration]="40" *ngIf="slide==1" (close)="slide=slide+1"></app-tuto>
+
+<app-tuto title="Ce NFT peut ensuite être partagé à vos contacts par une simple adresse mail"
+          background="https://images.unsplash.com/photo-1584018344977-1785e2aab7fe?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1935&q=80"
+          [duration]="40"
+          *ngIf="slide==2" (close)="slide=slide+1"></app-tuto>
+
 
 <mat-icon style="color:lightgray;display: block;position: fixed;right:5px;top:5px;opacity: 0.3;cursor: pointer;z-index: 10;"
           (click)="open_about()">
-	help
+  help
 </mat-icon>
 
 
 <mat-icon style="color:lightgray;display: block;position: fixed;right:30px;top:5px;opacity: 0.3;cursor: pointer;z-index: 10;"
           (click)="open_share()">
-	share
+  share
 </mat-icon>
 
 
-<div class="background-form" [style.background-image]="'url('+background+')'">
-	<div class="popup-form background-component mat-elevation-z18" [style.left]="border" [style.top]="border" [style.width]="size" [style.height]="size">
+<div class="background-form" [style.background-image]="'url('+background+')'" *ngIf="slide>2">
+  <div class="popup-form background-component mat-elevation-z18" [style.left]="border" [style.top]="border" [style.width]="size" [style.height]="size">
 
-		<div class="titleform" (click)="open_about()">{{appname}}</div>
-		<div class="subtitleform">{{claim}}</div>
+    <div class="subtitleform" [title]="appname+' '+version">{{claim}}</div>
 
-		<app-hourglass [message]="message"></app-hourglass>
+    <app-hourglass [message]="message"></app-hourglass>
 
-		<mat-vertical-stepper [linear]="false" style="width:98%;margin-left:-20px;"
-		                      *ngIf="message=='' && url_wallet=='' && !show_login"
-		                      animationDuration="1000ms" #stepper>
+    <mat-vertical-stepper [linear]="false" style="width:98%;margin-left:-20px;" [selectedIndex]="step"
+                          *ngIf="message=='' && url_wallet==''"
+                          animationDuration="1000ms" #stepper>
 
-			<mat-step style="width: 100%;">
-				<ng-template matStepLabel>Prendre / Attacher une photo</ng-template>
+      <mat-step style="width: 100%;">
+        <ng-template matStepLabel>Prendre / Attacher une photo</ng-template>
 
-				<app-upload-file (uploaded)="onFileSelected($event)"
-				                 *ngIf="message=='' && !photo" width="250px" height="150px"
-				                 [zone]="!(device.isHandset$ | async)" style="display: inline-block;padding: 20px;"
-				                 title="Importer un document depuis votre ordinateur / smartphone"
-				                 [maxsize]="100000000">
-					<span *ngIf="!(device.isHandset$ | async)">Déposer une image</span>
-					<span *ngIf="(device.isHandset$ | async)">Importer une photo</span>
-				</app-upload-file>
+        <app-upload-file (uploaded)="onFileSelected($event)"
+                         *ngIf="message=='' && !photo" width="250px" height="100px"
+                         [zone]="!(device.isHandset$ | async)" style="display: inline-block;padding: 20px;"
+                         title="Importer un document depuis votre ordinateur / smartphone"
+                         [maxsize]="100000000">
+          <span *ngIf="!(device.isHandset$ | async)">Déposer une image</span>
+          <span *ngIf="(device.isHandset$ | async)">Importer / Prendre une photo</span>
+        </app-upload-file>
 
-				<div *ngIf="photo">
-					<div style="display: inline-block;width:250px;height: 250px;position: relative;padding: 15px;margin: 20px;" class="mat-elevation-z2"  >
-						<img [src]="photo!.file"
-						     (click)="photo=undefined"
-						     style="width:100%;height:100%;object-fit: cover;">
-						<mat-icon (click)="rotate_photo()" title="Tourner la photo" *ngIf="!is_animated_photo()"
-						          style="display:block;cursor:pointer;position:absolute;z-index: 100;left:20px;top:20px;color: gray;">
-							cameraswitch
-						</mat-icon>
-					</div>
-				</div>
-				<br>
+        <div *ngIf="photo">
+          <div style="display: inline-block;width:250px;height: 250px;position: relative;padding: 15px;margin: 20px;" class="mat-elevation-z2"  >
+            <img [src]="photo!.file"
+                 (click)="photo=undefined"
+                 style="width:100%;height:100%;object-fit: cover;">
+            <mat-icon (click)="rotate_photo()" title="Tourner la photo" *ngIf="!is_animated_photo()"
+                      style="display:block;cursor:pointer;position:absolute;z-index: 100;left:20px;top:20px;color: gray;">
+              cameraswitch
+            </mat-icon>
+          </div>
+        </div>
 
-					<app-input value_type="text" maxlength="40" [cdkTrapFocus]="photo"
-					           *ngIf="photo && message.length==0" width="300px"
-					           label="Titre du NFT" [value]="name"
-					           (focusout)="preview();"
-					           (valueChange)="name=$event">
-					</app-input>
+        <app-input value_type="text" maxlength="40" [cdkTrapFocus]="photo"
+                   *ngIf="photo && message.length==0" width="300px"
+                   label="Titre du NFT" [value]="name"
+                   (focusout)="preview();"
+                   (valueChange)="name=$event">
+        </app-input>
 
-				<br>
-				<div *ngIf="photo && photo?.file?.length>0">
-					<button mat-raised-button (click)="restart()">Effacer</button>
-					<button mat-raised-button (click)="remove_bg()">Supprimer le fond</button>
-				</div>
+        <div *ngIf="photo && photo?.file?.length>0">
+          <button mat-raised-button (click)="restart()">Effacer</button>
+          <button mat-raised-button (click)="remove_bg()">Supprimer le fond</button>
+        </div>
 
+      </mat-step>
 
+      <mat-step style="width: 100%;">
+        <ng-template matStepLabel>Choisir le visuel du NFT</ng-template>
+        <app-hourglass *ngIf="visuels.length==0 && photo && name.length>0" message="Préparation des visuels en cours"></app-hourglass>
+        <div *ngIf="visuels.length>0">
+          <p class="mat-body-1" *ngIf="visuels!.length>1">Sélectionner la photo à utiliser pour le NFT</p>
+          <gallery
+            style="width: 350px;height:350px;display: inline-block;"
+            (indexChange)="select_visuel($event)" [thumbHeight]="0"
+            [items]="visuels"></gallery>
+        </div>
 
-			</mat-step>
-
-
-			<mat-step style="width: 100%;">
-				<ng-template matStepLabel>Choisir le visuel du NFT</ng-template>
-				<app-hourglass *ngIf="visuels.length==0 && photo && name.length>0" message="Préparation des visuels en cours"></app-hourglass>
-				<div *ngIf="visuels.length>0">
-					<p class="mat-body-1" *ngIf="visuels!.length>1">Sélectionner la photo à utiliser pour le NFT</p>
-					<gallery
-					         style="width: 350px;height:350px;display: inline-block;"
-					         (indexChange)="select_visuel($event)" [thumbHeight]="0"
-					         [items]="visuels"></gallery>
-				</div>
-
-				<button mat-raised-button *ngIf="visuels && visuels!.length>0 && configs.length>1"
-				        (click)="more_model()">
-					Voir d'autres modèles
-				</button>
+        <button mat-raised-button *ngIf="visuels && visuels!.length>0 && configs.length>1"
+                (click)="more_model()">
+          Voir d'autres modèles
+        </button>
 
 
-				<br>
-				<mat-checkbox [(ngModel)]="joinDoc" title="Ainsi le document peut être ouvert depuis le certificat">
-					Joindre la photo originale au NFT
-				</mat-checkbox>
-			</mat-step>
+        <br>
+        <mat-checkbox [(ngModel)]="joinDoc" title="Ainsi le document peut être ouvert depuis le certificat">
+          Joindre la photo originale au NFT
+        </mat-checkbox>
+      </mat-step>
 
 
-			<mat-step style="width: 100%;">
-				<ng-template matStepLabel>Informations complémentaires</ng-template>
-
-				<br>
-				<app-input value_type="memo" [value]="infos" (valueChange)="infos=$event;"
-				           [cols]="40" [rows]="5"
-				           maxwidth="400px" width="80vw"
-				           label="Texte d'accompagnement"
-				           help="Informations ajoutée dans le NFTs">
-				</app-input>
-
-				<br>
-				<app-input label="Pseudo / Nom du photographe"
-				           maxlength="50" maxwidth="400px" width="80vw"
-				           [value]="photographer" (valueChange)="photographer=$event">
-				</app-input>
-
-				<br><br><br>
-				<mat-expansion-panel style="max-width: 400px;width:80vw;">
-					<mat-expansion-panel-header>Mode avancé</mat-expansion-panel-header>
-					<app-input label="Dimension du visuel" [min]="400" [max]="2000" width="350px" [step]="10"
-					           color_value="white"
-					           [value]="nft_size" (valueChange)="nft_size=$event" value_type="slider">
-					</app-input>
-					<br>
-
-				</mat-expansion-panel>
+      <mat-step style="width: 100%;">
+        <ng-template matStepLabel>Informations complémentaires</ng-template>
+        <ng-template matStepContent>
 
 
-			</mat-step>
-			<mat-step >
-				<ng-template matStepLabel>Fabrication du NFT</ng-template>
+          <br>
+          <app-input value_type="memo" [value]="infos" (valueChange)="infos=$event;"
+                     [cols]="40" [rows]="5"
+                     maxwidth="400px" width="80vw"
+                     label="Texte d'accompagnement"
+                     help="Informations ajoutée dans le NFTs">
+          </app-input>
 
-					<app-input label="Nombre d'exemplaires (tirage)"
-					           [min]="1" [max]="500" [value]="max_supply"
-					           maxwidth="400px" width="80vw"
-					           value_type="slider" *ngIf="isSemiFungible()"
-					           (valueChange)="max_supply=$event">
-					</app-input>
+          <br>
+          <mat-expansion-panel style="max-width: 400px;width:80vw;">
+            <mat-expansion-panel-header>Mode avancé</mat-expansion-panel-header>
 
-					<app-input label="Adresse de destination du NFT"
-					           style="margin-top: 40px;"
-					           maxwidth="400px" width="80vw"
-					           help="Laissez vide si le NFT doit vous être envoyé (l'adresse email n'est pas conservée)"
-					           [value]="dests" (valueChange)="dests=$event" value_type="text"></app-input>
+            <app-input label="Pseudo / Nom du photographe"
+                       maxlength="50" maxwidth="400px" width="80vw"
+                       [value]="photographer" (valueChange)="photographer=$event">
+            </app-input>
 
-				<br><br>
-				<button mat-raised-button color="primary"
-				        title="Enregistrer le NFT sur la blockchaine"
-				        [disabled]="message.length>0 || !sel_visuel || name==''"
-				        (click)="ask_for_mint()">
-					Fabriquer !
-				</button>
+            <br>
+            <app-input label="Dimension du visuel" [min]="400" [max]="2000" width="350px" [step]="10"
+                       color_value="white"
+                       [value]="nft_size" (valueChange)="nft_size=$event" value_type="slider">
+            </app-input>
+            <br>
+          </mat-expansion-panel>
+        </ng-template>
+      </mat-step>
+      <mat-step state="build">
+        <ng-template matStepLabel>Fabrication du NFT</ng-template>
+        <ng-template matStepContent>
+          <app-input label="Nombre d'exemplaires (tirage)"
+                     [min]="1" [max]="500" [value]="max_supply"
+                     maxwidth="400px" width="80vw"
+                     value_type="slider" *ngIf="isSemiFungible()"
+                     (valueChange)="max_supply=$event">
+          </app-input>
 
-				<div class="mat-body-2" *ngIf="name==''" style="margin-top: 20px;">Le nom du NFT doit être renseigné</div>
+          <br>
 
-			</mat-step>
-		</mat-vertical-stepper>
+          <app-input label="Adresse de destination du NFT"
+                     style="margin-top: 40px;"
+                     *ngIf="miner"
+                     maxwidth="400px" width="80vw"
+                     help="Laissez vide si le NFT doit vous être envoyé (l'adresse email n'est pas conservée)"
+                     [value]="dests" (valueChange)="dests=$event" value_type="text"></app-input>
 
-		<div style="display: inline-block;text-align: center;" *ngIf="message.length==0">
-			<app-authent
-					[network]="network"
-					*ngIf="show_login"
-					intro_message="Flasher pour vous authentifier"
-					size="350px"
-					[use_cookie]="false"
-					[showWalletConnect]="true"
-					[showWebWallet]="true"
-					[showExtensionWallet]="true"
-					(cancel)="cancel()"
-					[showCancel]="true"
-					(disconnect)="disconnect()"
-					(invalid)="fail($event)"
-					(authent)="login($event)"></app-authent>
-		</div>
+          <div *ngIf="collection" class="mat-body-1">
+            Votre NFT sera inclus dans la collection {{collection?.name}}
+          </div>
+
+          <app-collection-selector
+            title="Sélectionner une collection pour le NFT"
+            (selected)="select_collection($event)"
+            (endSearch)="end_search_collection($event)"
+            [create_collection]="user.wallet_provider"
+            *ngIf="user.wallet_provider"
+            w_image="100px" w_image_selected="200px"
+            [network]="this.network"
+            [owner]="dests"
+            [min_supply]="0"
+          ></app-collection-selector>
+
+          <br>
+          <app-authent
+            [network]="network"
+            *ngIf="!miner && !user.wallet_provider"
+            intro_message="Connectez vous pour fabriquer le NFT"
+            size="350px"
+            [use_cookie]="false"
+            [connexion]="connexion"
+            (authent)="login($event)"></app-authent>
+          <br><br>
+
+          <button mat-raised-button color="primary"
+                  title="Enregistrer le NFT sur la blockchaine"
+                  [disabled]="message.length>0 || !sel_visuel || name=='' || !collection"
+                  (click)="ask_for_mint()">
+            Fabriquer le NFT !
+          </button>
+
+          <div class="mat-body-2" *ngIf="name==''" style="margin-top: 20px;">Le nom du NFT doit être renseigné</div>
+
+        </ng-template>
+      </mat-step>
+    </mat-vertical-stepper>
 
 
-		<div *ngIf="url_gallery.length>0 && url_wallet.length>0" class="mat-body-2" style="margin-top:100px;">
 
-			<a [href]="url_gallery" target="Gallery" style="margin: 10px;">Voir le NFT</a>
-			<br><br>
+    <div *ngIf="url_gallery!='' && url_wallet!=''" class="mat-body-2" style="margin-top:100px;">
 
-			<button mat-raised-button color="primary" (click)="restart()" style="margin-top: 50px;">
-				Nouvelle Photo
-			</button>
-		</div>
+      <a [href]="url_gallery" target="Gallery" style="margin: 10px;">Voir le NFT</a>
+      <br><br>
+
+      <button mat-raised-button color="primary" (click)="restart()" style="margin-top: 50px;">
+        Nouvelle Photo
+      </button>
+    </div>
 
 
-		<div style="position: absolute;display:block;z-index:10;top:-10px;right:-10px;color:#a4a4a4;opacity: 0.6;" *ngIf="message.length==0">
-			<button mat-icon-button (click)="show_login=true"
-			        title="Se connecter"
-			        *ngIf="!show_login && !user.isConnected()">
-				<mat-icon>login</mat-icon>
-			</button>
-
-			<button mat-icon-button (click)="logout()"
-			        title="Se déconnecter"
-			        *ngIf="user.isConnected()">
-				<mat-icon>logout</mat-icon>
-			</button>
-		</div>
-	</div>
+    <div style="position: absolute;display:block;z-index:10;top:-10px;right:-10px;color:#a4a4a4;opacity: 0.6;" *ngIf="message.length==0">
+      <button mat-icon-button (click)="logout()"
+              title="Se déconnecter"
+              *ngIf="user.isConnected()">
+        <mat-icon>logout</mat-icon>
+      </button>
+    </div>
+  </div>
 
 
 </div>

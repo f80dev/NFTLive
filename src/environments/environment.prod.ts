@@ -8,7 +8,7 @@ export const environment = {
     production: true,
     forum:"",
     mail:"contact@nfluent.io",
-    version: "dev",
+    version: "0.1",
     server:"https://api.nfluent.io:4242",
     appname:"NFT live",
     splash_visual:"./assets/forge.jpg",
@@ -17,6 +17,7 @@ export const environment = {
     wallet:"https://wallet.nfluent.io",
     website:"https://nfluent.io",
     faqs:"{{domain_appli}}/assets/faqs.yaml",
+  company:"nfluent",
 
     stockage:{
         stockage_document: "infura",
@@ -40,6 +41,8 @@ export const environment = {
         token:"NFLUCOIN-4921ed",
         network:"elrond-devnet",
         limit: 10,
+      collection:"",
+      wallet_limit: 10,
         histo:"db-server-nfluent",
     },
 

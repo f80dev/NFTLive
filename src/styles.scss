@@ -146,6 +146,7 @@ th {
   position:fixed;
   width:100vw;
   height:100vh;
+  overflow: scroll;
   background-repeat: no-repeat;
   background-size: cover;
 }
@@ -153,6 +154,7 @@ th {
 .popup-form {
   position:relative;
   max-width: 500px;
+  overflow: scroll;
   display: inline-block;
   text-align: center;
   color: white;

@@ -3,7 +3,10 @@ xcopy /f /y ..\NFTCalvi\src\app\splash\*.* src\app\splash\
 xcopy /f /y ..\NFTCalvi\src\app\input\*.* src\app\input\
 xcopy /f /y ..\NFTCalvi\src\app\signature\*.* src\app\signature\
 xcopy /f /y ..\NFTCalvi\src\app\payment\*.* src\app\payment\
+xcopy /f /y ..\NFTCalvi\src\app\tuto\*.* src\app\tuto\
+xcopy /f /y ..\NFTCalvi\src\app\collection-selector\*.* src\app\collection-selector\
 xcopy /f /y ..\NFTCalvi\src\app\faqs\*.* src\app\faqs\
+xcopy /f /y ..\NFTCalvi\src\app\showroom\*.* src\app\showroom\
 xcopy /f /y ..\NFTCalvi\src\app\about\*.* src\app\about\
 xcopy /f /y ..\NFTCalvi\src\app\prompt\*.* src\app\prompt\
 xcopy /f /y ..\NFTCalvi\src\app\reversebloc\*.* src\app\reversebloc\
@@ -26,6 +29,7 @@ xcopy /f /y ..\NFTCalvi\src\app\upload-file\*.*  src\app\upload-file\
 xcopy /f /y ..\NFTCalvi\src\create.ts src\
 xcopy /f /y ..\NFTCalvi\src\operation.ts src\
 xcopy /f /y ..\NFTCalvi\src\tools.ts src\
+xcopy /f /y ..\NFTCalvi\src\nfluent.ts src\
 xcopy /f /y ..\NFTCalvi\src\nft.ts src\
 xcopy /f /y ..\NFTCalvi\src\definitions.ts src\
 

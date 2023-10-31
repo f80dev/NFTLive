@@ -49,6 +49,9 @@ import { AboutComponent } from './about/about.component';
 import {MatListModule} from "@angular/material/list";
 import {FilterPipe} from "./filter.pipe";
 import {GOOGLE_CLIENT_ID} from "../definitions";
+import {TutoComponent} from "./tuto/tuto.component";
+import {CollectionSelectorComponent} from "./collection-selector/collection-selector.component";
+import {ShowroomComponent} from "./showroom/showroom.component";
 
 const routes: Routes = [
     { path: 'about', component: AboutComponent},
@@ -63,14 +66,14 @@ const config: SocketIoConfig = { url: environment.server, options: {} };
 @NgModule({
   declarations: [
     AppComponent,
-      AskForPaymentComponent,
+    AskForPaymentComponent,
     InputComponent,
     FaqsComponent,
     AuthentComponent,
     AdminComponent,
     PromptComponent,
     PaymentComponent,
-      FileDragNDropDirective,
+    FileDragNDropDirective,
     SignatureComponent,
     HourglassComponent,
     UploadFileComponent,
@@ -78,8 +81,11 @@ const config: SocketIoConfig = { url: environment.server, options: {} };
     ScannerComponent,
     NftliveComponent,
     SafePipe,
-      FilterPipe,
-    AboutComponent
+    FilterPipe,
+    AboutComponent,
+    TutoComponent,
+    CollectionSelectorComponent,
+    ShowroomComponent
   ],
     imports: [
         BrowserModule,

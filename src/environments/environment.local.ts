@@ -17,6 +17,7 @@ export const environment = {
     wallet:"http://127.0.0.1:4200",
     website:"https://nfluent.io",
     faqs:"{{domain_appli}}/assets/faqs.yaml",
+  company:"nfluent",
 
     stockage:{
         stockage_document: "infura",

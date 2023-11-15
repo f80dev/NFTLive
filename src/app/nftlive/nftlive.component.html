@@ -30,7 +30,11 @@
 <div class="background-form" [style.background-image]="'url('+background+')'" *ngIf="slide>2">
   <div class="popup-form background-component mat-elevation-z18" [style.left]="border" [style.top]="border" [style.width]="size" [style.height]="size">
 
-    <div class="subtitleform" [title]="appname+' '+version">{{claim}}</div>
+    <div class="subtitleform" [title]="appname+' '+version">
+      {{claim}}
+      <div *ngIf="isDevnet" style="opacity: 0.6"><small>Réseau de test (gratuit)</small></div>
+    </div>
+
 
     <app-hourglass [message]="message"></app-hourglass>
 

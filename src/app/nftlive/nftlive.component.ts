@@ -11,7 +11,7 @@ import {
   CryptoKey,
   showMessage,
   showError,
-  isEmail, rotate, now, extract_bank_from_param, apply_params
+  isEmail, rotate, now, extract_bank_from_param, apply_params, detect_type_network
 } from "../../tools";
 import {Collection, Connexion, newCollection} from "../../operation";
 import {ActivatedRoute, Router} from "@angular/router";
@@ -87,6 +87,7 @@ export class NftliveComponent implements OnInit,OnDestroy {
     web_wallet: false,
     webcam: false
   }
+  isDevnet=false;
 
 
   public constructor(
@@ -210,6 +211,7 @@ export class NftliveComponent implements OnInit,OnDestroy {
     this.name=params.title || params.name || ""
     if(this.photo!="" && this.name!="")this.preview(5)
 
+    this.isDevnet=(detect_type_network(this.network)=="devnet")
   }
 
   return_error(){

@@ -74,6 +74,7 @@ export class NftliveComponent implements OnInit,OnDestroy {
   slide: number=1
   step=0
   connexion: Connexion={
+    xAlias: false,
     address: false,
     direct_connect: false,
     email: false,

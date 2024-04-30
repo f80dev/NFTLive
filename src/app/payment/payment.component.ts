@@ -14,15 +14,19 @@ import {
 } from "@multiversx/sdk-core/out";
 import {WalletConnectV2Provider} from "@multiversx/sdk-wallet-connect-provider/out";
 import {NetworkService} from "../network.service";
-import {$$, Bank, eval_direct_url_xportal, now, setParams, showError, showMessage} from "../../tools";
+import {$$, Bank, now, setParams, showError, showMessage} from "../../tools";
 import { Account } from "@multiversx/sdk-core";
 import { ProxyNetworkProvider } from "@multiversx/sdk-network-providers";
 import {_prompt} from "../prompt/prompt.component";
 import {MatSnackBar} from "@angular/material/snack-bar";
 import {MatDialog} from "@angular/material/dialog";
-import {ReadyToPayChangeResponse} from "@google-pay/button-angular";
-import {wait_message} from "../hourglass/hourglass.component";
+import {GooglePayButtonModule, ReadyToPayChangeResponse} from "@google-pay/button-angular";
+import {HourglassComponent, wait_message} from "../hourglass/hourglass.component";
 import {DeviceService} from "../device.service";
+import {DecimalPipe, NgIf} from "@angular/common";
+import {MatIcon} from "@angular/material/icon";
+import {MatButton} from "@angular/material/button";
+import {eval_direct_url_xportal} from "../../crypto";
 
 export interface PaymentTransaction {
   transaction:string ,
@@ -70,6 +74,13 @@ export function extract_merchant_from_param(params:any) : Merchant | undefined {
 
 @Component({
   selector: 'app-payment',
+  standalone:true,
+    imports: [
+        HourglassComponent,
+        DecimalPipe,
+        MatIcon, NgIf,
+        GooglePayButtonModule, MatButton
+    ],
   templateUrl: './payment.component.html',
   styleUrls: ['./payment.component.css']
 })
@@ -116,7 +127,7 @@ export class PaymentComponent implements AfterContentInit,OnDestroy {
     let network=this.merchant?.wallet!.network!
     let token=this.merchant?.wallet?.token || "egld"
     this.networkService.get_token(token,network).subscribe({
-      next:async (money)=>{
+      next:async (money:any)=>{
         this.money=money
         if(this.wallet_provider && this.wallet_provider.account){
           this.user=this.wallet_provider.account.address;

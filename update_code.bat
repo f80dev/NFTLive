@@ -29,6 +29,7 @@ xcopy /f /y ..\NFTCalvi\src\app\upload-file\*.*  src\app\upload-file\
 xcopy /f /y ..\NFTCalvi\src\create.ts src\
 xcopy /f /y ..\NFTCalvi\src\operation.ts src\
 xcopy /f /y ..\NFTCalvi\src\tools.ts src\
+xcopy /f /y ..\NFTCalvi\src\crypto.ts src\
 xcopy /f /y ..\NFTCalvi\src\nfluent.ts src\
 xcopy /f /y ..\NFTCalvi\src\nft.ts src\
 xcopy /f /y ..\NFTCalvi\src\definitions.ts src\

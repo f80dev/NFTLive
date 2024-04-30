@@ -1,33 +1,46 @@
 import {Component, EventEmitter, Input, OnChanges, OnDestroy, Output, SimpleChanges} from '@angular/core';
 import {$$, CryptoKey, showError, showMessage} from "../../tools";
 import {NetworkService} from "../network.service";
-import {Collection} from "../../operation";
+import {Collection, emptyCollection} from "../../operation";
 import {NFT} from "../../nft";
-import {wait_message} from "../hourglass/hourglass.component";
+import {HourglassComponent, wait_message} from "../hourglass/hourglass.component";
 import {MatSnackBar} from "@angular/material/snack-bar";
 import {_prompt} from "../prompt/prompt.component";
 import {WalletProvider} from "@multiversx/sdk-web-wallet-provider/out";
 import {MatDialog} from "@angular/material/dialog";
+import {MatIcon} from "@angular/material/icon";
+import {InputComponent} from "../input/input.component";
+import {ShowroomComponent} from "../showroom/showroom.component";
+import {NgFor, NgIf} from "@angular/common";
 
 @Component({
   selector: 'app-collection-selector',
+  standalone:true,
+  imports: [
+    MatIcon,
+    HourglassComponent,
+    InputComponent,NgIf,NgFor,
+    ShowroomComponent
+  ],
+
   templateUrl: './collection-selector.component.html',
   styleUrls: ['./collection-selector.component.css']
 })
 export class CollectionSelectorComponent implements OnChanges,OnDestroy {
-  @Input("collection") sel_collection: Collection | undefined
+  @Input("collection") sel_collection: Collection=emptyCollection()
   collections: Collection[] = []
   message = ""
 
   @Output("selected") onselect: EventEmitter<Collection> = new EventEmitter();
   @Output("created") oncreate: EventEmitter<any> = new EventEmitter();
-
+  @Output("loaded") onloaded: EventEmitter<any> = new EventEmitter();
   @Output() endSearch: EventEmitter<Collection[]> = new EventEmitter();
+
   @Input() owner = ""
   @Input("create_collection") miner_or_validator:CryptoKey | WalletProvider | undefined
   @Input() network = ""
   @Input() roles = "canCreate"
-  @Input() limit = 4000
+  @Input() limit = 50
   @Input() refresh_delay = 0
   @Input() color = "white"
   @Input() w_image = "200px"
@@ -35,7 +48,7 @@ export class CollectionSelectorComponent implements OnChanges,OnDestroy {
   @Input() min_balance = 0
   @Input() animation = "crossfade"
   @Input("query") query_collection = "";
-  @Input() title = "Sélectionnez une collection";
+  @Input() title = "Collections disponibles";
   @Input() showSearchWithoutOwner: boolean = false;
   @Input() w_image_selected:string=""
 
@@ -67,12 +80,21 @@ export class CollectionSelectorComponent implements OnChanges,OnDestroy {
 
 
   refresh_collections(owner="",filter=""){
-      if(owner=="")owner=filter;
+      // if(owner=="")owner=filter;
+      // if(owner==""){
+      //   $$("Pas de recherche si aucun criteres indiqué")
+      //   return;
+      // }
       wait_message(this,"Recherche des collections "+(this.query_collection!='' ? 'contenant '+this.query_collection : ''))
-      this.api.get_collections(owner, this.network, true, this.limit, this.roles,this.min_supply,this.min_balance).subscribe((cols: any) => {
+      if(filter.startsWith("erd")){
+        owner=filter;
+        filter=""
+      }
+      this.api.get_collections(owner, this.network, true, this.limit, this.roles,this.min_supply,this.min_balance,this.query_collection).subscribe((cols: any) => {
         wait_message(this)
+        if(cols.length==this.limit)showMessage(this,"Toutes les collections ne sont pas affichées")
 
-        this.sel_collection=undefined
+        this.sel_collection=emptyCollection()
         this.collections = []
         for (let col of cols) {
           if (this.w_image != '' && this.collections.length<50){
@@ -80,6 +102,7 @@ export class CollectionSelectorComponent implements OnChanges,OnDestroy {
           }
           if(this.collections.length<3000) this.collections.push(col)
         }
+        this.onloaded.emit(true)
 
 
         if (this.collections.length == 0) {
@@ -97,6 +120,9 @@ export class CollectionSelectorComponent implements OnChanges,OnDestroy {
         showError(this, error)
       })
   }
+
+
+
 
   refresh() {
     if (this.handle != 0) {
@@ -148,11 +174,11 @@ export class CollectionSelectorComponent implements OnChanges,OnDestroy {
   }
 
   reset() {
-    this.query_collection="";
-    this.refresh_delay=0;
-    this.delay_showroom=0;
-    this.collections=[];
-    this.sel_collection=undefined
+    this.query_collection=""
+    this.refresh_delay=0
+    this.delay_showroom=0
+    this.collections=[]
+    this.sel_collection=emptyCollection()
   }
 
 
@@ -210,4 +236,6 @@ export class CollectionSelectorComponent implements OnChanges,OnDestroy {
         "text","Rechercher","Annuler",false)
     if(this.query_collection)this.refresh_collections(this.owner,this.query_collection)
   }
+
+  protected readonly emptyCollection = emptyCollection;
 }

@@ -10,6 +10,7 @@ export const environment = {
     mail:"contact@nfluent.io",
     version: "0.1",
     server:"https://api.nfluent.io:4242",
+  shorter_service:"https://api.f80.fr:99",
     appname:"NFT live",
     splash_visual:"./assets/forge.jpg",
     claim:"Transformer vos photos en NFT instantanément",
@@ -63,7 +64,8 @@ export const environment = {
                 title:"La banque de NFluent",
                 refund: 5
             }
-    }
+    },
+  max_file_size:1000000
 };
 
 

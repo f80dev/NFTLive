@@ -1,36 +1,83 @@
 //Version 0.1
-import {Component, EventEmitter, Input, OnChanges, OnDestroy, OnInit, Output, SimpleChanges} from '@angular/core';
+import {Component, EventEmitter, Input, OnChanges,  OnInit, Output, SimpleChanges} from '@angular/core';
 import {NetworkService} from "../network.service";
-import {$$, eval_direct_url_xportal, isEmail, isLocal, now, setParams, showError, showMessage} from "../../tools";
+import { NativeAuthClient } from "@multiversx/sdk-native-auth-client";
+import {$$, isEmail, isLocal, now,  showError, showMessage} from "../../tools";
 import {MatSnackBar} from "@angular/material/snack-bar";
 import {environment} from "../../environments/environment";
-import {Location} from "@angular/common";
+import {Location, NgIf} from "@angular/common";
 import {ActivatedRoute} from "@angular/router";
-import {SocialAuthService} from "@abacritt/angularx-social-login";
+import {GoogleSigninButtonModule, SocialAuthService} from "@abacritt/angularx-social-login";
 import {Connexion, Operation} from "../../operation";
 import {ADDR_ADMIN} from "../../definitions";
 import {DeviceService} from "../device.service";
 import { WalletConnectV2Provider } from "@multiversx/sdk-wallet-connect-provider";
-
 import { ExtensionProvider } from "@multiversx/sdk-extension-provider";
-import {WALLET_PROVIDER_DEVNET, WALLET_PROVIDER_MAINNET, WalletProvider} from "@multiversx/sdk-web-wallet-provider/out";
-import {Socket} from "ngx-socket-io";
+import {WALLET_PROVIDER_DEVNET, WALLET_PROVIDER_MAINNET, WalletProvider} from "@multiversx/sdk-web-wallet-provider";
+import {Socket, SocketIoConfig} from "ngx-socket-io";
 import {EvmWalletServiceService} from "../evm-wallet-service.service";
 import {_prompt} from "../prompt/prompt.component";
 import {MatDialog} from "@angular/material/dialog";
+import {MatAccordion, MatExpansionPanel, MatExpansionPanelHeader} from "@angular/material/expansion";
+import {MatCard, MatCardTitle} from "@angular/material/card";
+import {ScannerComponent} from "../scanner/scanner.component";
+import {CdkCopyToClipboard} from "@angular/cdk/clipboard";
+import {InputComponent} from "../input/input.component";
+import {MatIcon} from "@angular/material/icon";
+import {UploadFileComponent} from "../upload-file/upload-file.component";
+import {MatButton} from "@angular/material/button";
+import {XALIAS_PROVIDER_DEVNET, XALIAS_PROVIDER_MAINNET} from "@multiversx/sdk-web-wallet-provider/out";
+import {eval_direct_url_xportal} from "../../crypto";
 
 //Installation de @multiversx/sdk-wallet-connect-provider via yarn add @multiversx/sdk-wallet-connect-provider
+
+const config: SocketIoConfig = { url: environment.server, options: {} };
+
+
+enum Wallet_Operation {
+  Connect = "connect",
+  Logout = "logout",
+  SignTransactions = "signTransactions",
+  SignMessage = "signMessage",
+  CancelAction = "cancelAction",
+}
+
+interface IExtensionAccount {
+  address: string;
+  name?: string;
+  signature?: string;
+}
 
 @Component({
   selector: 'app-authent',
   templateUrl: './authent.component.html',
+  standalone: true,
+  imports: [
+      MatExpansionPanel,
+      MatExpansionPanelHeader,
+      MatCardTitle,
+      MatAccordion,
+      MatCard,
+      ScannerComponent,
+      CdkCopyToClipboard,
+      InputComponent,
+      GoogleSigninButtonModule,
+      MatIcon,
+      UploadFileComponent,
+      NgIf,
+      MatButton,
+
+  ],
   styleUrls: ['./authent.component.css']
 })
 export class AuthentComponent implements OnInit,OnChanges {
 
+  account: IExtensionAccount = { address: "" };
+
   @Input() intro_message:string="";
   @Input() network:string="";
   @Input() connexion:Connexion={
+    xAlias: false,
     address: false,
     direct_connect: true,
     email: false,
@@ -44,6 +91,7 @@ export class AuthentComponent implements OnInit,OnChanges {
     web_wallet: false,
     webcam: false
   }
+
 
   @Input() paiement:{address:string, amount:number,description:string} | undefined;
 
@@ -97,6 +145,7 @@ export class AuthentComponent implements OnInit,OnChanges {
   relayUrl:string = "wss://relay.walletconnect.com";
   qrcode_enabled: boolean = true;
   url_xportal_direct_connect: string="";
+  @Input() walletconnect_open=true;
 
   constructor(
       public api:NetworkService,
@@ -165,8 +214,8 @@ export class AuthentComponent implements OnInit,OnChanges {
       this.api.server_nfluent=this.nfluent_server;
 
 
-      if(this.network.indexOf("polygon")>-1){
-      }
+      // if(this.network.indexOf("polygon")>-1){
+      // }
 
 
       this.address="";
@@ -196,9 +245,9 @@ export class AuthentComponent implements OnInit,OnChanges {
       this.refresh();
       //Création d'un validateur nécéssaire pour le nfluent wallet connect
       let validator_name="val_"+now("rand")
-      this.api.subscribe_as_validator("",this.network,validator_name).subscribe((result:any)=>{
-        this.nfluent_wallet_connect_qrcode=this.api.server_nfluent+"/api/qrcode/"+encodeURIComponent(result.access_code);
-      });
+      // this.api.subscribe_as_validator("",this.network,validator_name).subscribe((result:any)=>{
+      //   this.nfluent_wallet_connect_qrcode=this.api.server_nfluent+"/api/qrcode/"+encodeURIComponent(result.access_code);
+      // });
       this.socket.on(validator_name,((data:any) => {
         this.address=data.address;
         this.success()
@@ -267,7 +316,7 @@ export class AuthentComponent implements OnInit,OnChanges {
     //Se charge de retourner le message d'authentification réussi
     this.onauthent.emit({address:this.address,provider:this.provider,strong:this.strong,encrypted:this.private_key,url_direct_xportal_connect:this.url_xportal_direct_connect})
     if(this._operation && this._operation.validate?.actions.success && this._operation.validate?.actions.success.redirect.length>0)
-      open(this._operation.validate?.actions.success.redirect);
+      open(this._operation.validate.actions.success.redirect);
   }
 
 
@@ -281,7 +330,18 @@ export class AuthentComponent implements OnInit,OnChanges {
     if(!isEmail(this.address) && !this.api.isElrond(this.address)){
       showMessage(this,"Pour l'instant, Le service n'est compatible qu'avec les adresses mail ou elrond");
     } else {
-      this.success();
+      if(isEmail(this.address)){
+        this.api.create_account(this.network,this.address,"","",{},true).subscribe({
+          next:(r:any)=>{
+            this.address=r.address
+            this.private_key=r.encrypt;
+            this.strong=true;
+          }
+        })
+      }else{
+        this.success();
+      }
+
     }
   }
 
@@ -353,8 +413,10 @@ export class AuthentComponent implements OnInit,OnChanges {
   onflash($event: {data:string}) {
     //Flash du nfluent_wallet
       if($event.data.length>20){
-        $$("Lecture de l'adresse "+$event.data);
-        this.api.check_access_code($event.data).subscribe((result:any)=>{
+        let addr=$event.data
+        addr=addr.replace("multiversx:","").split("?")[0]
+        $$("Lecture de l'adresse "+addr);
+        this.api.check_access_code(addr).subscribe((result:any)=>{
           this.address=result.addr;
           this.enabled_webcam=false;
           this.validate();
@@ -393,30 +455,67 @@ export class AuthentComponent implements OnInit,OnChanges {
     return this.network.indexOf("devnet") ? "D" : "T"
   }
 
+  private startBgrMsgChannel(operation: string, connectData: any): Promise<any> {
+    //voir https://github.com/multiversx/mx-sdk-js-extension-provider/blob/main/src/extensionProvider.ts
+    return new Promise((resolve) => {
+      window.postMessage(
+        {target: "erdw-inpage",type: operation,data: connectData}, window.origin
+      );
+
+      const eventHandler = (event: any) => {
+        if (event.isTrusted && event.data.target === "erdw-contentScript") {
+          if (event.data.type === "connectResponse") {
+            if (event.data.data && Boolean(event.data.data.address)) {
+              this.account = event.data.data;
+            }
+            window.removeEventListener("message", eventHandler);
+            resolve(event.data.data);
+          } else {
+            window.removeEventListener("message", eventHandler);
+            resolve(event.data.data);
+          }
+        }
+      };
+      window.addEventListener("message", eventHandler, false);
+    });
+  }
+
+  async createNativeAuthInitialPart() {
+    const url=this.network.indexOf("devnet")>-1 ? "https://devnet-api.multiversx.com" : "https://api.multiversx.com"
+    const client = new NativeAuthClient({apiUrl: url, expirySeconds: 7200,});
+    return client.initialize();
+  }
 
   async open_extension_wallet() {
     //https://docs.multiversx.com/sdk-and-tools/sdk-js/sdk-js-signing-providers/#the-extension-provider-multiversx-defi-wallet
     this.provider=ExtensionProvider.getInstance();
     let rc=await this.provider.init();
-    let address=await this.provider.login();
-    if(address.length>0){
-      this.strong=true;
-      this.validate(address);
-    } else {
+    try{
+      let address=await this.provider.login({ token: await this.createNativeAuthInitialPart() })
+      if(address.length>0){
+        this.strong=true;
+        this.validate(address);
+      } else {
+        this.strong=false;
+        this.oninvalid.emit(false);
+      }
+    } catch (e){
       this.strong=false;
       this.oninvalid.emit(false);
     }
-
-    //this.init_wallet.emit({provider:this.provider,address:this.address});
   }
 
-  async open_web_wallet(){
+  async open_web_wallet(service="standard"){
     //tag webwallet open_webwallet
     //https://docs.multiversx.com/sdk-and-tools/sdk-js/sdk-js-signing-providers/#the-web-wallet-provider
-    this.provider=new WalletProvider(this.network.indexOf("devnet")>-1 ? WALLET_PROVIDER_DEVNET : WALLET_PROVIDER_MAINNET)
-    const callback_url = this.callback=="" ? encodeURIComponent(environment.appli+"/"+this._location.path(true)) : encodeURIComponent(environment.appli+this.callback)
+    let connexion_mode=this.network.indexOf("devnet")>-1 ? WALLET_PROVIDER_DEVNET : WALLET_PROVIDER_MAINNET
+    if(service=="xAlias")connexion_mode=this.network.indexOf("devnet")>-1 ? XALIAS_PROVIDER_DEVNET : XALIAS_PROVIDER_MAINNET
+    this.provider=new WalletProvider(connexion_mode)
+    this.provider.redirectDelayMilliseconds=30000
+
+    const callback_url = this.callback=="" ? encodeURIComponent(this._location.path(true)) : encodeURIComponent(this.callback)
     try{
-      let address=await this.provider.login({callback_url})
+      let address=await this.provider.login({callback_url,token:await this.createNativeAuthInitialPart()})
       this.strong=address.length>0;
       if(this.strong){
         this.validate(address);
@@ -438,8 +537,13 @@ export class AuthentComponent implements OnInit,OnChanges {
     //https://docs.multiversx.com/sdk-and-tools/sdk-js/sdk-js-signing-providers/#the-wallet-connect-provider
 
     const callbacks:any ={
-      onClientLogin: async ()=> {this.address=await this.provider.getAddress();},
-      onClientLogout: ()=> {},
+      onClientLogin: async ()=> {
+        $$("Connexion wallet connect ")
+        this.address=await this.provider.getAddress();
+        },
+      onClientLogout: ()=> {
+        $$("Déconnexion de wallet connect")
+      },
     }
     this.provider = new WalletConnectV2Provider(callbacks, this.get_chain_id(), this.relayUrl, this.walletConnect_ProjectId);
 

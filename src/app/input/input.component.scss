@@ -26,7 +26,20 @@ mat-form-field:not(.mat-focused) .mat-hint {
 .help-input {
   opacity: 0.8;
   font-size: x-small;
-  line-height: 85%;
+  line-height: 80%;
   margin-top: -5px;
 }
 
+::-webkit-scrollbar {
+  width: 10px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: transparent;
+}
+
+.matStartDate {
+  border-color: #0A246A;
+}

@@ -9,6 +9,7 @@ export const environment = {
     forum:"",
     mail:"contact@nfluent.io",
     version: "0.1 dev",
+  shorter_service:"https://api.f80.fr:99",
     server:"http://127.0.0.1:4242",
     appname:"NFT live",
     visual:"https://images.unsplash.com/photo-1573152958734-1922c188fba3?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1932&q=80",
@@ -64,7 +65,8 @@ export const environment = {
     //             refund: 5
     //         }
     // }
-    merchant: undefined
+    merchant: undefined,
+  max_file_size:1000000
 
 };
 

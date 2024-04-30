@@ -1,9 +1,9 @@
 import {HostListener, Injectable, OnInit} from '@angular/core';
 import {HttpClient, HttpErrorResponse} from "@angular/common/http";
-import {$$, Bank, CryptoKey, encrypt,  words} from "../tools";
+import {$$, Bank, CryptoKey, encrypt, hashCode, words} from "../tools";
 import {environment} from "../environments/environment";
 
-import {catchError, retry, Subject, throwError, timeout} from "rxjs";
+import {catchError, Observable, retry, Subject, throwError, timeout} from "rxjs";
 import {Collection, Operation} from "../operation";
 import {NFT, SolanaToken, SplTokenInfo, Validator} from "../nft";
 import {Configuration, Layer} from "../create";
@@ -34,6 +34,9 @@ export class NetworkService implements OnInit {
     stockage_available:string[]=[];             //stockage visuel et metadata
     stockage_document_available:string[]=[];    //stockage document attaché
     chain_id="D"                                //Chain_id du réseau elrond
+    private cache$: any ={};
+    private cacheTime:any={};
+    private cacheExpiry = 300000; // Five minutes
 
     constructor(
         private httpClient : HttpClient
@@ -67,8 +70,7 @@ export class NetworkService implements OnInit {
     }
 
 
-    init_keys(with_balance=false,access_code:string="",operation_id:string="",network="") {
-        if(network.length==0)network=this.network;
+    init_keys(with_balance=false,access_code:string="",operation_id:string="",network=""): Promise<CryptoKey[]> {
         return new Promise<CryptoKey[]>((resolve, reject) => {
             this.wait("Chargement des clés");
             if(network!=''){
@@ -85,7 +87,6 @@ export class NetworkService implements OnInit {
             } else {
                 reject();
             }
-
         });
     }
 
@@ -383,8 +384,6 @@ export class NetworkService implements OnInit {
         }else{
             return false;
         }
-
-
     }
 
 
@@ -404,13 +403,28 @@ export class NetworkService implements OnInit {
         return throwError(() => new Error('Problème technique. Serveur probablement injoignable'));
     }
 
-    _get(url: string, param: string="",_timeout=30000) {
+    refreshCacheIfNeeded(cache_id:string,cacheDelay=300): void {
+        if (this.cacheTime.hasOwnProperty(cache_id) && ( new Date().getTime() - this.cacheTime[cache_id].getTime()) > cacheDelay*1000) {
+            this.cache$[cache_id] = null;
+            this.cacheTime[cache_id] = null;
+        }
+    }
+
+    _get(url: string, param: string="",_timeout=30000,cacheDelayInSec=0) {
         if(!url.startsWith("http")){
             url="/api/"+url;
             url=this.server_nfluent+url.replace("//","/").replace("/api/api/","/api/")
         }
-        $$("Appel de "+url+"?"+param)
-        return this.httpClient.get<any>(url+"?"+param).pipe(retry(1),timeout(_timeout),catchError(this.handleError))
+
+        let cache_id=hashCode(url).toString(16)
+        this.refreshCacheIfNeeded(cache_id,cacheDelayInSec)
+        if (!this.cache$.hasOwnProperty(cache_id)) {
+            $$(cache_id+" - Appel de "+url+"?"+param)
+            this.cache$[cache_id] = this.httpClient.get<any>(url+"?"+param).pipe(retry(1),timeout(_timeout),catchError(this.handleError))
+            this.cacheTime[cache_id] = new Date();
+        }
+
+        return this.cache$[cache_id];
     }
 
 
@@ -429,6 +443,8 @@ export class NetworkService implements OnInit {
         }
         return this.httpClient.delete(url+"?"+param).pipe(retry(1),timeout(2000),catchError(this.handleError))
     }
+
+
 
 
 
@@ -460,7 +476,7 @@ export class NetworkService implements OnInit {
                 }
 
                 if(network.indexOf("elrond")>-1 || network.indexOf("polygon")>-1 || network.startsWith("db-")){
-                    this.httpClient.get(this.server_nfluent+"/api/nfts/?limit="+limit+"&withAttr="+with_attr+"&offset="+offset+"&account="+addr+"&network="+network).subscribe((r:any)=>{
+                    this._get("/nfts/","limit="+limit+"&withAttr="+with_attr+"&offset="+offset+"&account="+addr+"&network="+network,30000,300).subscribe((r:any)=>{
                         resolve({result:r,offset:offset});
                     },(err:any)=>{
                         reject(err);
@@ -788,9 +804,12 @@ export class NetworkService implements OnInit {
     }
 
     create_account(network: string, email: string,
-                   new_account_mail="mail_new_account.html",
-                   existing_account_mail="mail_existing_account.html",dictionnary={},force=false,subject="Votre nouveau wallet") {
+                   new_account_mail="",
+                   existing_account_mail="",dictionnary={},force=false,subject="Votre nouveau wallet") {
         //On pourra utiliser %network% pour inserer le nom du réseau dans le nom des emails de confirmations
+        if(new_account_mail=="")new_account_mail="mail_new_account.html"
+        if(existing_account_mail=="")existing_account_mail="mail_existing_account.html"
+
         let body={
             email:email,
             subject:subject,
@@ -901,15 +920,26 @@ export class NetworkService implements OnInit {
     }
 
 
-    refund(bank:Bank,dest:string,comment="") {
+    refund(bank:Bank,dest:string,comment="",gift_for_transaction=0) {
         //@bp.route('/refund/<address>/<amount>/<token>/',methods=["POST"])
-        let body={token:bank.token,collection:bank.collection,amount:bank.refund,bank:bank.miner,data:comment,network:bank.network,limit:bank.limit,histo:bank.histo}
+        let body={
+            token:bank.token,
+            collection:bank.collection,
+            amount:bank.refund,
+            miner:bank.miner,
+            data:comment,
+            gift_for_transaction:gift_for_transaction,
+            network:bank.network,
+            limit:bank.limit,
+            histo:null
+        }
+        $$("Appel de refund sur "+dest,body)
         return this._post("refund/"+dest+"/","",body,200000);
     }
 
-    get_collections(owners_or_collections: string,network="",detail=false,limit=300,operations='canCreate',min_supply=0,min_balance=0) {
+    get_collections(owners_or_collections: string,network="",detail=false,limit=300,operations='canCreate',min_supply=0,min_balance=0,query="") {
         if(network.length==0)network=this.network;
-        let url="/api/collections/"+owners_or_collections+"/?network="+network+"&limit="+limit+"&detail="+detail+"&operations="+operations+"&min_supply"+min_supply+"&min_balance="+min_balance;
+        let url="/api/collections/?owner="+owners_or_collections+"&query="+query+"&network="+network+"&limit="+limit+"&detail="+detail+"&operations="+operations+"&min_supply="+min_supply+"&min_balance="+min_balance;
         url=this.server_nfluent+url.replace("//","/")
         return this.httpClient.get<Collection[]>(url);
     }
@@ -1145,11 +1175,14 @@ export class NetworkService implements OnInit {
         return this._get("canvas/","svg="+encodeURIComponent(svg)+"&width="+width+"&height="+height);
     }
 
-    create_short_link(body:any) {
-        return this._post("short_link/","",body)
+    create_short_link(body:{url:string}) : Observable<{cid:string}> {
+        return this._post(environment.shorter_service+"/api/add/","",body)
+        //return this._post("short_link/","",body)
     }
 
-    find_tokens(network: string, filter: string,with_detail=false,limit=200) {
-        return this._get("tokens/","network="+network+"&filter="+filter+"&with_detail="+with_detail+"&limit="+limit)
+
+    find_tokens(network: string, filter: string="",filter_by_name:string="",with_detail=false,limit=200) : Observable<any[]> {
+        return this._get("tokens/","network="+network+"&filter="+filter+"&filter_by_name="+filter_by_name+"&with_detail="+with_detail+"&limit="+limit,60000,300)
     }
+
 }

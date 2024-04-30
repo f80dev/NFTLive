@@ -4,28 +4,33 @@
 
   <!--  Permet l'authentification force par code d'accés ou directement seed phrase-->
   <mat-accordion *ngIf="!directShowQRCode">
-    <mat-expansion-panel *ngIf="network.indexOf('elrond')>-1 && (showWalletConnect || showExtensionWallet || showWebWallet)" [expanded]="true">
-      <mat-expansion-panel-header class="color-primary">Utiliser Wallet Connect</mat-expansion-panel-header>
+    <mat-expansion-panel *ngIf="network.indexOf('elrond')>-1 && (showWalletConnect || showExtensionWallet || showWebWallet)" [expanded]="walletconnect_open">
+      <mat-expansion-panel-header class="color-primary">Se connecter avec son wallet</mat-expansion-panel-header>
       <mat-card style="text-align: center;width: fit-content;display: inline-block;" class="multiverx-background" *ngIf="qrcode.length==0">
         <mat-card-title class="multiversx-text">S'authentifier sur MultiversX via</mat-card-title>
-        <button   mat-raised-button class="multiversx-button"
-                *ngIf="showWalletConnect && qrcode.length==0"
+        <button mat-raised-button class="multiversx-button"
+                *ngIf="connexion.wallet_connect && qrcode.length==0"
                 (click)="open_wallet_connect()">
           L'application xPortal
-        </button><br>
+        </button>
 
-        <button   mat-raised-button class="multiversx-button"
-                *ngIf="showWebWallet"
+        <button mat-raised-button class="multiversx-button"
+                *ngIf="connexion.web_wallet"
                 (click)="open_web_wallet()">
           Le wallet du Web
-        </button><br>
+        </button>
 
-        <button   mat-raised-button class="multiversx-button"
-                *ngIf="showExtensionWallet"
+        <button mat-raised-button class="multiversx-button"
+                *ngIf="connexion.xAlias"
+                (click)="open_web_wallet('xAlias')">
+          Avec Google
+        </button>
+
+        <button mat-raised-button class="multiversx-button"
+                *ngIf="connexion.extension_wallet"
                 (click)="open_extension_wallet()">
           L'extension Chrome
-        </button><br>
-
+        </button>
 
       </mat-card>
 
@@ -138,7 +143,7 @@
         </asl-google-signin-button>
 
         <app-input
-                *ngIf="showEmail || showAddress"
+                *ngIf="connexion.email || connexion.address"
                 maxwidth="600px" style="width: 80%"
                 [label]="intro_message"
                 [placeholder]="prompt"
@@ -148,16 +153,12 @@
                 [help]="explain_message">
         </app-input>
 
-
         <button mat-icon-button (click)="run_scanner()" *ngIf="showWebcam" style="margin-top: -10px;">
           <mat-icon>qr_code_scanner</mat-icon>
         </button>
 
-
       </div>
     </mat-expansion-panel>
-
-
 
   </mat-accordion>
 
@@ -174,13 +175,11 @@
   <div *ngIf="directShowQRCode && network.indexOf('elrond')>-1">
     <div *ngIf="nfluent_wallet_connect_qrcode.length>0 && showNfluentWalletConnect"
          [style.opacity]="qrcode_enabled ? 1 : 0.5" >
-      <img
-              title="Flasher avec votre wallet nfluent"
-              [cdkCopyToClipboard]="nfluent_wallet_connect_qrcode"
-              [src]="nfluent_wallet_connect_qrcode"
-              style="cursor: copy;" [style.width]="size"><br>
+      <img title="Flasher avec votre wallet nfluent"
+           [cdkCopyToClipboard]="nfluent_wallet_connect_qrcode"
+           [src]="nfluent_wallet_connect_qrcode"
+           style="cursor: copy;" [style.width]="size"><br>
       <small>{{title}}</small>
-
     </div>
 
     {{intro_message}}<br>

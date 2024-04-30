@@ -60,7 +60,8 @@ export const environment = {
                 title:"La banque de NFluent",
                 refund: 5
             }
-    }
+    },
+  max_file_size:1000000
 };
 
 

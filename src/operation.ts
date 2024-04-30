@@ -32,7 +32,30 @@ export interface Connexion {
   web_wallet:boolean | false
   private_key:boolean | false
   direct_connect: boolean | false
+  xAlias: boolean | false,
   nfluent_wallet_connect: boolean | false            //QRCode proposé par nfluent en substitution de Wallet Connect à utiliser depuis le wallet nfluent
+}
+
+export function get_default_connexion(keys="wallet_connect,extension_wallet"): Connexion {
+  let rc:any={
+    xAlias: false,
+    address: false,
+    direct_connect: false,
+    email: false,
+    extension_wallet: false,
+    google: false,
+    keystore: false,
+    nfluent_wallet_connect: false,
+    on_device: false,
+    private_key: false,
+    wallet_connect: false,
+    web_wallet: false,
+    webcam: false
+  }
+  for(let k of keys.split(",")){
+    rc[k]=true
+  }
+  return rc
 }
 
 export interface Source {
@@ -402,5 +425,23 @@ export function check_nft(ope:Operation){
   }
 }
 
+
+export function emptyCollection() : Collection {
+  return {
+    cover: undefined,
+    description: undefined,
+    gallery: undefined,
+    id: "",
+    link: "",
+    name: "",
+    options: [],
+    owner: "",
+    price: undefined,
+    roles: undefined,
+    supply: 0,
+    type: undefined,
+    visual: undefined
+  }
+}
 
 

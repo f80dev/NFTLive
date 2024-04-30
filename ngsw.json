@@ -1,0 +1,149 @@
+{
+  "configVersion": 1,
+  "timestamp": 1714462850406,
+  "index": "/index.html",
+  "assetGroups": [
+    {
+      "name": "app",
+      "installMode": "prefetch",
+      "updateMode": "prefetch",
+      "cacheQueryOptions": {
+        "ignoreVary": true
+      },
+      "urls": [
+        "/favicon.ico",
+        "/index.html",
+        "/main.js",
+        "/manifest.webmanifest",
+        "/nfluent-dark.css",
+        "/nfluent-mvx.css",
+        "/nfluent-yellow.css",
+        "/nfluent.css",
+        "/polyfills.js",
+        "/runtime.js",
+        "/styles.css"
+      ],
+      "patterns": []
+    },
+    {
+      "name": "assets",
+      "installMode": "lazy",
+      "updateMode": "prefetch",
+      "cacheQueryOptions": {
+        "ignoreVary": true
+      },
+      "urls": [
+        "/HelveticaInseratLT.ttf",
+        "/assets/config_nftlive.yaml",
+        "/assets/config_nftlive_for_mvx.yaml",
+        "/assets/config_nftlive_for_mvx_2.yaml",
+        "/assets/config_nftlive_for_pics.yaml",
+        "/assets/config_nftlive_for_pics_2.yaml",
+        "/assets/existing_account_wallet_access.html",
+        "/assets/existing_account_wallet_access_elrond.html",
+        "/assets/icons/Secret.webp",
+        "/assets/icons/egld-token-logo.webp",
+        "/assets/icons/matic-token-icon.webp",
+        "/assets/icons/nftlive-128.png",
+        "/assets/icons/nftlive-256.png",
+        "/assets/icons/nftlive-512.png",
+        "/assets/icons/nftlive-64.png",
+        "/assets/logo.png",
+        "/assets/logo_mvx.jpg",
+        "/assets/logo_mvx.png",
+        "/assets/polaroid.svg",
+        "/assets/polaroid_2.svg",
+        "/assets/reptile_skin.webp",
+        "/assets/simple.svg",
+        "/assets/simple_blanc.svg",
+        "/assets/simple_blanc_centre.svg",
+        "/assets/sunset.webp",
+        "/assets/wallet_access.html",
+        "/assets/wallet_access_elrond.html",
+        "/assets/webFonts/GilroyRegular/font.woff",
+        "/assets/webFonts/GilroyRegular/font.woff2",
+        "/assets/webFonts/HelveticaInseratLT.ttf",
+        "/assets/webFonts/MyFontsWebfontsKit.css",
+        "/assets/webFonts/Swiss721BlackCondensedBT.ttf",
+        "/assets/webFonts/mediasans.css",
+        "/assets/webFonts/mediasansweb-bold.woff",
+        "/assets/webFonts/mediasansweb-bold.woff2",
+        "/assets/webFonts/mediasansweb-regular.woff",
+        "/assets/webFonts/mediasansweb-regular.woff2",
+        "/assets/wood.jpg"
+      ],
+      "patterns": []
+    }
+  ],
+  "dataGroups": [],
+  "hashTable": {
+    "/HelveticaInseratLT.ttf": "72bdaf283827e7e2c2dfde8c2635fdc1c4500bc3",
+    "/assets/config_nftlive.yaml": "b36a41c96dec710b1eeabeb4daf15e945d872494",
+    "/assets/config_nftlive_for_mvx.yaml": "cf639468902caf01f18379e09ec01d63757b96dd",
+    "/assets/config_nftlive_for_mvx_2.yaml": "af9dd25316673b7ab5268487d790bdb656b9eb6d",
+    "/assets/config_nftlive_for_pics.yaml": "be0f8a74d07b1035c18ab587d35b7d04b16e90c9",
+    "/assets/config_nftlive_for_pics_2.yaml": "cdce16ea903a2ece19d52d444ece46382dde3c47",
+    "/assets/existing_account_wallet_access.html": "e5d0f450cc1856ce713854b1e27f5233213b4ee3",
+    "/assets/existing_account_wallet_access_elrond.html": "e5d0f450cc1856ce713854b1e27f5233213b4ee3",
+    "/assets/icons/Secret.webp": "5540f86b5e7b8e244527b7f286ca61e37f7441cb",
+    "/assets/icons/egld-token-logo.webp": "dd67d0b53452bf44c29468c56178725fffc1a36e",
+    "/assets/icons/matic-token-icon.webp": "fc3f0cdb05d3a6f2d6e1813e18bb3ee81e1683f5",
+    "/assets/icons/nftlive-128.png": "a1bfbbde6962f9cca3a87558790952073cc6faab",
+    "/assets/icons/nftlive-256.png": "cf65a76bad091bc6327fed49349a3fa7427e6271",
+    "/assets/icons/nftlive-512.png": "6a9e70dca12dc83b9177efdec75fb78a9833fded",
+    "/assets/icons/nftlive-64.png": "90e37b041ddefca53aa948db89151026828e1def",
+    "/assets/logo.png": "cf65a76bad091bc6327fed49349a3fa7427e6271",
+    "/assets/logo_mvx.jpg": "b52001ef2d65748ef48ed175e6701282f7a37b61",
+    "/assets/logo_mvx.png": "a49e1d87ba092e22f96ae5ddf24a3f0300e4a74c",
+    "/assets/polaroid.svg": "af4cf6b9d8c0c4457e03ddab8bc053e59e372f6f",
+    "/assets/polaroid_2.svg": "44d04fbf97dcb1f07d1ac1e754677bf6b3d5c5e5",
+    "/assets/reptile_skin.webp": "5447d9adc9500df7ef73e34aa9e17ef1b96db412",
+    "/assets/simple.svg": "8519049ba1f3491c6359fdfaf6fbfc5a992c4898",
+    "/assets/simple_blanc.svg": "6685b9633c1db0a776b5108a1b34013acfd26afc",
+    "/assets/simple_blanc_centre.svg": "cc7d117b91647d23b84570b2f981890dcb295c39",
+    "/assets/sunset.webp": "8fb3cd775f04556ad380a6b0f643548eee420f95",
+    "/assets/wallet_access.html": "cf76d9b03ea004777d7b0263ea1d0e17b2d825f0",
+    "/assets/wallet_access_elrond.html": "cf76d9b03ea004777d7b0263ea1d0e17b2d825f0",
+    "/assets/webFonts/GilroyRegular/font.woff": "3af221642b4c256268420f0e82583519c21ef868",
+    "/assets/webFonts/GilroyRegular/font.woff2": "b37bd3ed335f0bf8ff29e4176b920a4be1f837b3",
+    "/assets/webFonts/HelveticaInseratLT.ttf": "72bdaf283827e7e2c2dfde8c2635fdc1c4500bc3",
+    "/assets/webFonts/MyFontsWebfontsKit.css": "857bb12ffc5177ebd6284903da805b15d3719c08",
+    "/assets/webFonts/Swiss721BlackCondensedBT.ttf": "2fab61e49e3db6ae73cb7312b6a7b13b8b4dcf59",
+    "/assets/webFonts/mediasans.css": "33546a33fffa6e4a6edc44dccdf29fb0d5e68b06",
+    "/assets/webFonts/mediasansweb-bold.woff": "30897bff3f932629e64a87ae691a2ebe397c92cd",
+    "/assets/webFonts/mediasansweb-bold.woff2": "2b4a1d98540df56d84c02084208fd26068f90de9",
+    "/assets/webFonts/mediasansweb-regular.woff": "c3ed8508e8a3ac5a4bce2c622920964674b9fc7e",
+    "/assets/webFonts/mediasansweb-regular.woff2": "7e99ced9bda11c1e8765ec5907b210c14a84bc06",
+    "/assets/wood.jpg": "35eac92cd829d3d753aff82f55da314ed8b92a34",
+    "/favicon.ico": "90e37b041ddefca53aa948db89151026828e1def",
+    "/index.html": "4e724cdde948ca26e869457c1b5f2fb5b4f4aa34",
+    "/main.js": "73aaaa04a7cb055be263dc3c606c86628c922db0",
+    "/manifest.webmanifest": "cc116a11355172bc47ba1982abb9bddfec0a3ee8",
+    "/nfluent-dark.css": "363c449d66922df4360fc877af8d8a6629ad84dd",
+    "/nfluent-mvx.css": "d2da7fdcde17f9ed9c23b0bd93791f44c7284a99",
+    "/nfluent-yellow.css": "b5785f46a7f376bff84dc90a4886cddc5518bdf8",
+    "/nfluent.css": "7b000c4dd1b0f6d170ffc511180edaa565385fec",
+    "/polyfills.js": "1705c888e94c6903fcee891f13acf7c8685e9a62",
+    "/runtime.js": "0ad6b2249f22f47874dfdfa0caec9caa0c388f33",
+    "/styles.css": "2687a53ee52107ac6a961578df33552f258d4618"
+  },
+  "navigationUrls": [
+    {
+      "positive": true,
+      "regex": "^\\/.*$"
+    },
+    {
+      "positive": false,
+      "regex": "^\\/(?:.+\\/)?[^/]*\\.[^/]*$"
+    },
+    {
+      "positive": false,
+      "regex": "^\\/(?:.+\\/)?[^/]*__[^/]*$"
+    },
+    {
+      "positive": false,
+      "regex": "^\\/(?:.+\\/)?[^/]*__[^/]*\\/.*$"
+    }
+  ],
+  "navigationRequestStrategy": "performance"
+}

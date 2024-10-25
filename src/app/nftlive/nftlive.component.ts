@@ -7,11 +7,10 @@ import {NFT} from "../../nft";
 import {
   $$, Bank,
   getParams,
-  newCryptoKey,
   CryptoKey,
   showMessage,
   showError,
-  isEmail, rotate, now, extract_bank_from_param, apply_params, detect_type_network
+  isEmail, rotate, now, apply_params, detect_type_network
 } from "../../tools";
 import {Collection, Connexion, newCollection} from "../../operation";
 import {ActivatedRoute, Router} from "@angular/router";
@@ -24,6 +23,7 @@ import {extract_merchant_from_param, Merchant} from "../payment/payment.componen
 import {DeviceService} from "../device.service";
 import {NgNavigatorShareService} from "ng-navigator-share";
 import {get_nfluent_wallet_url, init_visuels} from "../../nfluent";
+import {extract_bank_from_param} from "../../crypto";
 
 @Component({
   selector: 'app-nftlive',
